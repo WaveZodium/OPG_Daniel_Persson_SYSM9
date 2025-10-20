@@ -1,4 +1,4 @@
 ﻿namespace CookMaster.Managers;
 
-class RecipeManager {
+public class RecipeManager {
 }
