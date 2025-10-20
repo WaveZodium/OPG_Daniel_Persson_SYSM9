@@ -1,12 +1,16 @@
-﻿using System.Windows;
+﻿using CookMaster.ViewModels;
+using System.Windows;
 
 namespace CookMaster;
 
-/// <summary>
-/// Interaction logic for MainWindow.xaml
-/// </summary>
 public partial class MainWindow : Window {
+    // Keep parameterless ctor for designer and compatibility
     public MainWindow() {
         InitializeComponent();
+    }
+
+    // DI constructor — service provider will use this when resolving MainWindow
+    public MainWindow(MainWindowViewModel vm) : this() {
+        DataContext = vm;
     }
 }
