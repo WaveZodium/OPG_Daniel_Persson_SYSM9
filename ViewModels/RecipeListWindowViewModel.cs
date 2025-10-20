@@ -1,4 +1,6 @@
-﻿namespace CookMaster.ViewModels;
+﻿using CookMaster.MVVM;
 
-public class RecipeListWindowViewModel {
+namespace CookMaster.ViewModels;
+
+public class RecipeListWindowViewModel : ViewModelBase {
 }
