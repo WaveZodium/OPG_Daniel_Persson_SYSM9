@@ -2,8 +2,11 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:CookMaster"
+             xmlns:managers="clr-namespace:CookMaster.Managers"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <!-- Add instance of UserManager and RecipeManager so they are available globally. -->
+        <managers:RecipeManager x:Key="RecipeManager" />
+        <managers:UserManager x:Key="UserManager" />
     </Application.Resources>
 </Application>
