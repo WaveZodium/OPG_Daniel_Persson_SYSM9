@@ -1,4 +1,14 @@
-﻿namespace CookMaster.MVVM;
+﻿using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
-class ViewModelBase {
+namespace CookMaster.MVVM;
+
+class ViewModelBase : INotifyPropertyChanged {
+    // INotifyPropertyChanged implementation
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    // Method to raise the PropertyChanged event
+    public void OnPropertyChanged([CallerMemberName] string? propertyName = null) {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 }
