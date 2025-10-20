@@ -1,4 +1,4 @@
 ﻿namespace CookMaster.ViewModels;
 
-class RecipeListWindowViewModel {
+public class RecipeListWindowViewModel {
 }

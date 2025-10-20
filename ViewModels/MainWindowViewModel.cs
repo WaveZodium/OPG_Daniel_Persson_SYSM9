@@ -1,4 +1,4 @@
 ﻿namespace CookMaster.ViewModels;
 
-class MainWindowViewModel {
+public class MainWindowViewModel {
 }
