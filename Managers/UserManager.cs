@@ -18,8 +18,16 @@ public class UserManager {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password)) return false;
         if (UserExists(username)) return false;
 
-        var user = new User(username.Trim(), password, role, country);
+        User user;
+
+        if (role == UserRole.Admin) {
+            user = new AdminUser(username.Trim(), password, country);
+        }
+        else {
+            user = new User(username.Trim(), password, role, country);
+        }
         Users.Add(user);
+
         return true;
     }
 
