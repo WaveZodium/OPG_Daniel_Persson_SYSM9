@@ -6,7 +6,9 @@
         xmlns:local="clr-namespace:CookMaster.Views"
         mc:Ignorable="d"
         Title="UserListWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+    <StackPanel>
+        <Button Content="Add User" Command="{Binding PerformAddUserCommand}" Width="150" Height="75"/>
+        <Button Content="View User" Command="{Binding PerformViewUserCommand}" Width="150" Height="75"/>
+        <Button Content="Delete User" Command="{Binding PerformDeleteUserCommand}" Width="150" Height="75"/>
+    </StackPanel>
 </Window>

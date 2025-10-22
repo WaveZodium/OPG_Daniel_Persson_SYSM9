@@ -20,10 +20,12 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         PerformSaveCommand = new RelayCommand(_ => PerformSave());
         PerformCloseCommand = new RelayCommand(_ => PerformClose());
     }
+
     private void PerformSave() {
         // Request the view to close and indicate success
         RequestClose?.Invoke(true);
     }
+
     private void PerformClose() {
         // Request the view to close and indicate cancellation
         // which in this case is that no changes were saved.

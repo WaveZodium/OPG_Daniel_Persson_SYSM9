@@ -11,5 +11,15 @@ public partial class UserListWindow : Window {
     // DI constructor — service provider will use this when resolving MainWindow
     public UserListWindow(UserListWindowViewModel vm) : this() {
         DataContext = vm;
+
+        vm.RequestClose += result => {
+            try {
+                DialogResult = result;
+            }
+            catch {
+                // ignore if not opened modally
+            }
+            Close();
+        };
     }
 }

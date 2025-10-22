@@ -1,24 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CookMaster.ViewModels;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
-namespace CookMaster.Views {
-    /// <summary>
-    /// Interaction logic for UserDetailWindow.xaml
-    /// </summary>
-    public partial class UserDetailWindow : Window {
-        public UserDetailWindow() {
-            InitializeComponent();
-        }
+namespace CookMaster.Views;
+
+public partial class UserDetailWindow : Window {
+    public UserDetailWindow() {
+        InitializeComponent();
+    }
+
+    // DI constructor — service provider will use this when resolving MainWindow
+    public UserDetailWindow(UserDetailWindowViewModel vm) : this() {
+        DataContext = vm;
+
+        vm.RequestClose += result => {
+            try {
+                DialogResult = result;
+            }
+            catch {
+                // ignore if not opened modally
+            }
+            Close();
+        };
     }
 }
