@@ -10,5 +10,6 @@
         <Button Content="Add User" Command="{Binding PerformAddUserCommand}" Width="150" Height="75"/>
         <Button Content="View User" Command="{Binding PerformViewUserCommand}" Width="150" Height="75"/>
         <Button Content="Delete User" Command="{Binding PerformDeleteUserCommand}" Width="150" Height="75"/>
+        <Button Content="Close" Command="{Binding PerformCloseCommand}" Width="150" Height="75"/>
     </StackPanel>
 </Window>

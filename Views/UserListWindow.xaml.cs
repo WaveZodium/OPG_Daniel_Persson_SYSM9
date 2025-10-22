@@ -12,13 +12,18 @@ public partial class UserListWindow : Window {
     public UserListWindow(UserListWindowViewModel vm) : this() {
         DataContext = vm;
 
+        // Subscribe to RequestClose. Only set DialogResult when VM explicitly requests success (true).
         vm.RequestClose += result => {
-            try {
-                DialogResult = result;
+            if (result.HasValue && result.Value) {
+                // VM requested success -> set DialogResult so ShowDialog() caller receives 'true'
+                try {
+                    DialogResult = true;
+                }
+                catch {
+                    // ignore if not opened modally
+                }
             }
-            catch {
-                // ignore if not opened modally
-            }
+            // For null or false we just close — this mirrors clicking the X (which returns null)
             Close();
         };
     }

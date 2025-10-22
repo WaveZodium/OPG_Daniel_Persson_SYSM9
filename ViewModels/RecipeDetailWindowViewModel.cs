@@ -11,6 +11,7 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
     public event Action<bool>? RequestClose;
 
     public RelayCommand PerformSaveCommand { get; }
+    public RelayCommand PerformDeleteCommand { get; }
     public RelayCommand PerformCloseCommand { get; }
 
     public RecipeDetailWindowViewModel(RecipeManager recipeManager, IServiceProvider services) {
@@ -19,6 +20,7 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
 
         PerformSaveCommand = new RelayCommand(_ => PerformSave());
         PerformCloseCommand = new RelayCommand(_ => PerformClose());
+        PerformDeleteCommand = new RelayCommand(_ => PerformDelete());
     }
 
     private void PerformSave() {
@@ -30,5 +32,9 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         // Request the view to close and indicate cancellation
         // which in this case is that no changes were saved.
         RequestClose?.Invoke(false);
+    }
+
+    private void PerformDelete() {
+        RequestClose?.Invoke(true);
     }
 }

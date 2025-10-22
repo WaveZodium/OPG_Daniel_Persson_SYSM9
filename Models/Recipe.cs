@@ -1,18 +1,31 @@
 ﻿namespace CookMaster.Models;
 
 public class Recipe {
-    private Guid Id { get; init; } = Guid.NewGuid();
-    private string Title { get; set; } = string.Empty;
-    private string Ingredients { get; set; } = string.Empty;
-    private string Instructions { get; set; } = string.Empty;
-    private RecipeCategory Category { get; set; } = RecipeCategory.Other;
-    private DateTime Date { get; init; } = DateTime.UtcNow;
-    private User CreatedBy { get; init; } = new User();
+    public Guid Id { get; init; } = Guid.NewGuid();
+    public string Title { get; set; } = string.Empty;
+    public List<string> Ingredients { get; set; } = new List<string>();
+    public string Instructions { get; set; } = string.Empty;
+    public RecipeCategory Category { get; set; } = RecipeCategory.Other;
+    public DateTime Date { get; init; } = DateTime.UtcNow;
+    public User CreatedBy { get; init; }
 
-    public void EditRecipe() {
+    public Recipe(string title, List<string> ingredients, string instructions, RecipeCategory category, User createdBy) {
+        Title = title;
+        Ingredients = ingredients;
+        Instructions = instructions;
+        Category = category;
+        CreatedBy = createdBy;
     }
 
-    public void CopyRecipe() {
+    public void EditRecipe(string title, List<string> ingredients, string instructions, RecipeCategory category) {
+        Title = title;
+        Ingredients = ingredients;
+        Instructions = instructions;
+        Category = category;
+    }
+
+    public Recipe CopyRecipe() {
+        return new Recipe(Title, new List<string>(Ingredients), Instructions, Category, CreatedBy);
     }
 
 }

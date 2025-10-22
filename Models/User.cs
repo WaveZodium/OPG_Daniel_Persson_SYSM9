@@ -3,13 +3,20 @@
 namespace CookMaster.Models;
 
 public class User {
-    private Guid Id { get; init; } = Guid.NewGuid();
-    private DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+    public Guid Id { get; init; } = Guid.NewGuid();
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 
-    private string Username { get; set; } = string.Empty;
-    private string Password { get; set; } = string.Empty; // plaintext for now (will upgrade later)
-    private UserRole Role { get; set; } = UserRole.User;
-    private Country Country { get; set; } = Country.Sweden;
+    public string Username { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty; // plaintext for now (will upgrade later)
+    public UserRole Role { get; set; } = UserRole.User;
+    public Country Country { get; set; } = Country.Sweden;
+
+    public User(string username, string password,  UserRole role, Country country) {
+        Username = username;
+        SetPassword(password);
+        Role = role;
+        Country = country;
+    }
 
     public bool ValidateLogin(string username, string password) {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password)) return false;

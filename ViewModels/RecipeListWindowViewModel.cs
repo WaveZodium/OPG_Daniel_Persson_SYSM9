@@ -62,11 +62,30 @@ public class RecipeListWindowViewModel : ViewModelBase {
     }
 
     private void OpenUserListWindow() {
-        // Use a scope and open UserListWindow as a modal dialog; dispose immediately after
-        using var scope = _services.CreateScope();
-        var window = scope.ServiceProvider.GetRequiredService<UserListWindow>();
+        // Find the currently open RecipeListWindow instance (the one that triggered this command)
+        var current = Application.Current?.Windows.OfType<RecipeListWindow>().FirstOrDefault();
 
-        // ShowDialog blocks until closed; scope is disposed when leaving using block
-        window.ShowDialog();
+        // Hide the recipe list window so it disappears behind the modal dialog
+        current?.Hide();
+
+        try {
+            // Open the UserListWindow as a modal dialog from a DI scope
+            using var scope = _services.CreateScope();
+            var window = scope.ServiceProvider.GetRequiredService<UserListWindow>();
+
+            // Set the owner to keep proper window parenting (optional, but recommended)
+            if (current != null)
+                window.Owner = current;
+
+            // Show dialog; this blocks until the userlist window closes (either via X or Close button)
+            window.ShowDialog();
+        }
+        finally {
+            // When the dialog closes, restore the same RecipeListWindow instance
+            if (current != null) {
+                current.Show();
+                current.Activate();
+            }
+        }
     }
 }
