@@ -8,8 +8,18 @@ public partial class AddRecipeWindow : Window {
         InitializeComponent();
     }
 
-    // DI constructor — service provider will use this when resolving MainWindow
+    // DI constructor — service provider will use this when resolving AddRecipeWindow
     public AddRecipeWindow(AddRecipeWindowViewModel vm) : this() {
         DataContext = vm;
+
+        vm.RequestClose += result => {
+            try {
+                DialogResult = result;
+            }
+            catch {
+                // ignore if not opened modally
+            }
+            Close();
+        };
     }
 }

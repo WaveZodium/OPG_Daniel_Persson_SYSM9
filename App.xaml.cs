@@ -12,11 +12,11 @@ public partial class App : Application {
     protected override void OnStartup(StartupEventArgs e) {
         var services = new ServiceCollection();
 
-        // register managers as singletons
+        // Register managers as singletons
         services.AddSingleton<UserManager>();
         services.AddSingleton<RecipeManager>();
 
-        // register viewmodels and windows (transient)
+        // Register viewmodels and windows (transient)
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<MainWindow>();
 
@@ -34,6 +34,9 @@ public partial class App : Application {
 
         services.AddTransient<UserListWindowViewModel>();
         services.AddTransient<UserListWindow>();
+
+        services.AddTransient<UserDetailWindowViewModel>();
+        services.AddTransient<UserDetailWindow>();
 
         Services = services.BuildServiceProvider();
 

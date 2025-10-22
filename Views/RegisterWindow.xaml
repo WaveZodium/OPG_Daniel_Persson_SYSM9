@@ -8,5 +8,6 @@
         Title="RegisterWindow" Height="450" Width="800">
     <StackPanel>
         <Button Content="Register" Command="{Binding PerformRegisterCommand}" Width="150" Height="75"/>
+        <Button Content="Cancel" Command="{Binding PerformCancelCommand}" Width="150" Height="75"/>
     </StackPanel>
 </Window>
