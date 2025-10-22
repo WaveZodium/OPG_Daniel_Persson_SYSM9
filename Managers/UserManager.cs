@@ -9,6 +9,10 @@ public class UserManager {
     public List<User> Users { get; set; } = new List<User>();
     private User? _loggedInUser { get; set; } = null;
 
+    public UserManager() {
+        SeedDefaults();
+    }
+
     public bool UserExists(string username) {
         if (string.IsNullOrWhiteSpace(username)) return false;
         return Users.Any(u => string.Equals(u.Username, username.Trim(), StringComparison.OrdinalIgnoreCase));
@@ -36,6 +40,7 @@ public class UserManager {
     }
 
     public bool SignIn(string username, string password) {
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password)) return false;
         var user = FindUser(username);
         if (user == null) return false;
         if (!user.ValidatePassword(password)) return false;

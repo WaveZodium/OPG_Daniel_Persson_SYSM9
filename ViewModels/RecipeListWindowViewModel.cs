@@ -2,7 +2,9 @@
 using CookMaster.MVVM;
 using CookMaster.Views;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.ObjectModel;
 using System.Windows;
+using CookMaster.Models;
 
 namespace CookMaster.ViewModels;
 
@@ -10,6 +12,25 @@ public class RecipeListWindowViewModel : ViewModelBase {
     private readonly RecipeManager _recipeManager;
     private readonly UserManager _userManager;
     private readonly IServiceProvider _services;
+
+    private ObservableCollection<Recipe> _recipes = new();
+    public ObservableCollection<Recipe> Recipes {
+        get => _recipes;
+        set => Set(ref _recipes, value);
+    }
+
+    private Recipe? _selectedRecipe;
+    public Recipe? SelectedRecipe {
+        get => _selectedRecipe;
+        set => Set(ref _selectedRecipe, value);
+    }
+
+    // New bindable property for the logged-in user display
+    private string _loggedInUserName = string.Empty;
+    public string LoggedInUserName {
+        get => _loggedInUserName;
+        set => Set(ref _loggedInUserName, value);
+    }
 
     public RelayCommand OpenMainWindowCommand { get; }
     public RelayCommand OpenAddRecipeWindowCommand { get; }
@@ -20,6 +41,13 @@ public class RecipeListWindowViewModel : ViewModelBase {
         _recipeManager = recipeManager;
         _userManager = userManager;
         _services = services;
+
+        // populate the observable collection from the manager
+        Recipes = new ObservableCollection<Recipe>(_recipeManager.GetAllRecipes());
+
+        // initialize logged-in user display from UserManager
+        var logged = _userManager.GetLoggedIn();
+        LoggedInUserName = logged != null ? logged.Username : "(not signed in)";
 
         OpenMainWindowCommand = new RelayCommand(_ => OpenMainWindow());
         OpenAddRecipeWindowCommand = new RelayCommand(_ => OpenAddRecipeWindow());

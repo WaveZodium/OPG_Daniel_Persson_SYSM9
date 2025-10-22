@@ -6,15 +6,7 @@ using CookMaster.Models;
 namespace CookMaster.Managers;
 
 public class RecipeManager {
-    /*
-     * recipes list
-     * addrecipe
-     * removerecipe
-     * getallrecipes
-     * getbyuser
-     * filter
-     * updaterecipe
-     */
+    private readonly UserManager _userManager;
 
     public List<Recipe> Recipes { get; set; } = new List<Recipe>();
 
@@ -25,8 +17,9 @@ public class RecipeManager {
         ByCookingTime
     }
 
-    public RecipeManager() {
-        
+    public RecipeManager(UserManager userManager) {
+        _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+        SeedDefaults();
     }
 
     public void AddRecipe(Recipe recipe) {
@@ -51,11 +44,9 @@ public class RecipeManager {
         return Recipes.Any(r => string.Equals(r.Title, title.Trim(), StringComparison.OrdinalIgnoreCase));
     }
 
-    // Idempotent seeding of sample recipes (uses UserManager to find the user owner)
-    public void SeedDefaults(UserManager userManager) {
-        if (userManager == null) return;
-
-        var user = userManager.FindUser("user");
+    // Idempotent seeding using the injected UserManager
+    public void SeedDefaults() {
+        var user = _userManager.FindUser("user");
         if (user == null) return;
 
         if (!RecipeExists("Pancakes")) {

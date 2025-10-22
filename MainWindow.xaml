@@ -6,8 +6,21 @@
         xmlns:local="clr-namespace:CookMaster"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <StackPanel>
-        <Button Content="Register" Command="{Binding OpenRegisterWindowCommand}" Width="150" Height="75"/>
-        <Button Content="Recipe List" Command="{Binding OpenRecipeListWindowCommand}" Width="150" Height="75"/>
-    </StackPanel>
+    <Grid>
+        <StackPanel Width="auto" Height="auto" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBlock Text="Username:" Margin="3"/>
+            <TextBox Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="3"/>
+
+            <TextBlock Text="Password:" Margin="3"/>
+            <!-- Later, switch to PasswordBox for security. -->
+            <TextBox Text="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="3"/>
+
+            <StackPanel Orientation="Horizontal" Margin="0 21 0 0">
+                <Button Content="Login" Command="{Binding TryLoginCommand}" 
+                        Width="100" Height="30" Margin="3"/>
+                <Button Content="Register" Command="{Binding OpenRegisterWindowCommand}" 
+                        Width="100" Height="30" Margin="3"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
 </Window>

@@ -6,10 +6,34 @@
         xmlns:local="clr-namespace:CookMaster.Views"
         mc:Ignorable="d"
         Title="RecipeListWindow" Height="450" Width="800">
-    <StackPanel>
-        <Button Content="If Logged In: Logout" Command="{Binding OpenMainWindowCommand}" Width="150" Height="75"/>
-        <Button Content="Add Recipe" Command="{Binding OpenAddRecipeWindowCommand}" Width="150" Height="75"/>
-        <Button Content="View Recipe" Command="{Binding OpenRecipeDetailWindowCommand}" Width="150" Height="75"/>
-        <Button Content="If Admin: List Users" Command="{Binding OpenUserListWindowCommand}" Width="150" Height="75"/>
-    </StackPanel>
+    <Grid Margin="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left column: username + buttons -->
+        <StackPanel Grid.Column="1" Margin="0,0,12,0">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <TextBlock Text="Logged in as:" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding LoggedInUserName}" FontWeight="Bold" Margin="6,0,0,0" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <Button Content="If Logged In: Logout" Command="{Binding OpenMainWindowCommand}" Width="160" Height="30" Margin="0,4"/>
+            <Button Content="Add Recipe" Command="{Binding OpenAddRecipeWindowCommand}" Width="160" Height="30" Margin="0,4"/>
+            <Button Content="View Recipe" Command="{Binding OpenRecipeDetailWindowCommand}" Width="160" Height="30" Margin="0,4"/>
+            <Button Content="If Admin: List Users" Command="{Binding OpenUserListWindowCommand}" Width="160" Height="30" Margin="0,4"/>
+        </StackPanel>
+
+        <!-- Right column: recipe list -->
+        <DataGrid Grid.Column="0" ItemsSource="{Binding Recipes}" 
+                  SelectedItem="{Binding SelectedRecipe}" 
+                  AutoGenerateColumns="False" 
+                  Height="380" Margin="0,0,0,0">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Recipe Name" Binding="{Binding Title}" Width="*"/>
+                <DataGridTextColumn Header="Created By" Binding="{Binding CreatedBy.Username}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
 </Window>
