@@ -13,16 +13,16 @@
         </Grid.ColumnDefinitions>
 
         <!-- Left column: username + buttons -->
-        <StackPanel Grid.Column="1" Margin="0,0,12,0">
+        <StackPanel Grid.Column="1" Margin="4,0,0,0">
             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <TextBlock Text="Logged in as:" VerticalAlignment="Center" />
-                <TextBlock Text="{Binding LoggedInUserName}" FontWeight="Bold" Margin="6,0,0,0" VerticalAlignment="Center" />
+                <TextBlock Text="Logged in as:" VerticalAlignment="Center" Margin="4" />
+                <TextBlock Text="{Binding LoggedInUserName}" FontWeight="Bold" Margin="4" VerticalAlignment="Center" />
             </StackPanel>
 
-            <Button Content="If Logged In: Logout" Command="{Binding TryLogoutCommand}" Width="160" Height="30" Margin="0,4"/>
-            <Button Content="Add Recipe" Command="{Binding OpenAddRecipeWindowCommand}" Width="160" Height="30" Margin="0,4"/>
-            <Button Content="View Recipe" Command="{Binding OpenRecipeDetailWindowCommand}" Width="160" Height="30" Margin="0,4"/>
-            <Button Content="If Admin: List Users" Command="{Binding OpenUserListWindowCommand}" Width="160" Height="30" Margin="0,4"/>
+            <Button Content="If Logged In: Logout" Command="{Binding TryLogoutCommand}" Width="160" Height="30" Margin="4"/>
+            <Button Content="Add Recipe" Command="{Binding OpenAddRecipeWindowCommand}" Width="160" Height="30" Margin="4"/>
+            <Button Content="View Recipe" Command="{Binding OpenRecipeDetailWindowCommand}" Width="160" Height="30" Margin="4"/>
+            <Button Content="If Admin: List Users" Command="{Binding OpenUserListWindowCommand}" Width="160" Height="30" Margin="4"/>
         </StackPanel>
 
         <!-- Right column: recipe list -->
