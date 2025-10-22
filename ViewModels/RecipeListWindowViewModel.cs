@@ -32,6 +32,8 @@ public class RecipeListWindowViewModel : ViewModelBase {
         set => Set(ref _loggedInUserName, value);
     }
 
+
+    public RelayCommand TryLogoutCommand { get; }
     public RelayCommand OpenMainWindowCommand { get; }
     public RelayCommand OpenAddRecipeWindowCommand { get; }
     public RelayCommand OpenRecipeDetailWindowCommand { get; }
@@ -53,6 +55,10 @@ public class RecipeListWindowViewModel : ViewModelBase {
         OpenAddRecipeWindowCommand = new RelayCommand(_ => OpenAddRecipeWindow());
         OpenRecipeDetailWindowCommand = new RelayCommand(_ => OpenRecipeDetailWindow());
         OpenUserListWindowCommand = new RelayCommand(_ => OpenUserListWindow());
+        TryLogoutCommand = new RelayCommand(_ => {
+            _userManager.SignOut();
+            OpenMainWindow();
+        });
     }
 
     private void OpenMainWindow() {

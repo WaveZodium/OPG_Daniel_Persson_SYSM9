@@ -19,7 +19,7 @@
                 <TextBlock Text="{Binding LoggedInUserName}" FontWeight="Bold" Margin="6,0,0,0" VerticalAlignment="Center" />
             </StackPanel>
 
-            <Button Content="If Logged In: Logout" Command="{Binding OpenMainWindowCommand}" Width="160" Height="30" Margin="0,4"/>
+            <Button Content="If Logged In: Logout" Command="{Binding TryLogoutCommand}" Width="160" Height="30" Margin="0,4"/>
             <Button Content="Add Recipe" Command="{Binding OpenAddRecipeWindowCommand}" Width="160" Height="30" Margin="0,4"/>
             <Button Content="View Recipe" Command="{Binding OpenRecipeDetailWindowCommand}" Width="160" Height="30" Margin="0,4"/>
             <Button Content="If Admin: List Users" Command="{Binding OpenUserListWindowCommand}" Width="160" Height="30" Margin="0,4"/>
