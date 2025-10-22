@@ -6,7 +6,10 @@
         xmlns:local="clr-namespace:CookMaster.Views"
         mc:Ignorable="d"
         Title="RecipeListWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+    <StackPanel>
+        <Button Content="If Logged In: Logout" Command="{Binding OpenMainWindowCommand}" Width="150" Height="75"/>
+        <Button Content="Add Recipe" Command="{Binding OpenAddRecipeWindowCommand}" Width="150" Height="75"/>
+        <Button Content="View Recipe" Command="{Binding OpenRecipeDetailWindowCommand}" Width="150" Height="75"/>
+        <Button Content="If Admin: List Users" Command="{Binding OpenUserListWindowCommand}" Width="150" Height="75"/>
+    </StackPanel>
 </Window>

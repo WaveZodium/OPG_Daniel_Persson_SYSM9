@@ -7,13 +7,14 @@ using System.Threading.Tasks;
 namespace CookMaster.Models; 
 public enum RecipeCategory {
     Appetizer,
-    MainCourse,
-    Dessert,
     Beverage,
-    Salad,
-    Soup,
-    Snack,
     Breakfast,
+    Dessert,
+    Lunch,
+    MainCourse,
+    Salad,
     SideDish,
+    Snack,
+    Soup,
     Other
 }

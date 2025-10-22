@@ -3,15 +3,13 @@
 namespace CookMaster.Models;
 
 public class User {
-    public Guid Id { get; init; } = Guid.NewGuid();
-    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+    private Guid Id { get; init; } = Guid.NewGuid();
+    private DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 
-    public string Username { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty; // plaintext for now (will upgrade later)
-    public UserRole Role { get; set; } = UserRole.User;
-    public Country Country { get; set; } = Country.Sweden;
-
-    public bool ValidatePassword(string plainPassword) => Password == (plainPassword ?? string.Empty);
+    private string Username { get; set; } = string.Empty;
+    private string Password { get; set; } = string.Empty; // plaintext for now (will upgrade later)
+    private UserRole Role { get; set; } = UserRole.User;
+    private Country Country { get; set; } = Country.Sweden;
 
     public bool ValidateLogin(string username, string password) {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password)) return false;
@@ -37,6 +35,8 @@ public class User {
             Country = country.Value;
     }
 
-    // Simple setter so you can later switch this to hashing in one place
+    public bool ValidatePassword(string plainPassword) => Password == (plainPassword ?? string.Empty);
+
+    // Simple setter so later can switch this to hashing in one place
     public void SetPassword(string plainPassword) => Password = plainPassword ?? string.Empty;
 }

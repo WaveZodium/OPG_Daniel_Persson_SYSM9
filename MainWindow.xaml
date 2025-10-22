@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:CookMaster"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
-    </Grid>
+    <StackPanel>
+        <Button Content="Register" Command="{Binding OpenRegisterWindowCommand}" Width="150" Height="75"/>
+        <Button Content="Recipe List" Command="{Binding OpenRecipeListWindowCommand}" Width="150" Height="75"/>
+    </StackPanel>
 </Window>
