@@ -2,6 +2,7 @@
 using CookMaster.Models;
 using CookMaster.ViewModels;
 using CookMaster.Views;
+using CookMaster.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 
@@ -16,6 +17,9 @@ public partial class App : Application {
         // Register managers as singletons
         services.AddSingleton<UserManager>();
         services.AddSingleton<RecipeManager>();
+
+        // Register dialog service
+        services.AddSingleton<IDialogService, DialogService>();
 
         // Register viewmodels and windows (transient)
         services.AddTransient<MainWindowViewModel>();

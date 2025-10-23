@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using CookMaster.Managers;
+﻿using CookMaster.Managers;
 using CookMaster.Models;
 using CookMaster.MVVM;
+using CookMaster.Services;
+using CookMaster.Views;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Linq;
 using System.Windows;
 
 namespace CookMaster.ViewModels;
@@ -13,6 +15,7 @@ namespace CookMaster.ViewModels;
 public class RecipeDetailWindowViewModel : ViewModelBase {
     private readonly RecipeManager _recipeManager;
     private readonly UserManager _userManager;
+    private readonly IDialogService _dialogService;
     private readonly IServiceProvider _services;
 
     // the original source recipe (not edited directly)
@@ -107,9 +110,16 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
     public RelayCommand PerformDeleteCommand { get; }
     public RelayCommand PerformCloseCommand { get; }
 
-    public RecipeDetailWindowViewModel(RecipeManager recipeManager, UserManager userManager, IServiceProvider services, Recipe? sourceRecipe) {
+    public RecipeDetailWindowViewModel(
+        RecipeManager recipeManager,
+        UserManager userManager,
+        IDialogService dialogService,
+        IServiceProvider services,
+        Recipe? sourceRecipe)
+    {
         _recipeManager = recipeManager;
         _userManager = userManager;
+        _dialogService = dialogService;
         _services = services;
 
         Recipe = sourceRecipe?.CopyRecipe();
@@ -126,23 +136,58 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         if (_sourceRecipe != null) {
             // Edit existing recipe
             _sourceRecipe.EditRecipe(Recipe.Title, Recipe.Ingredients, Recipe.Instructions, Recipe.Category);
+            IsDirty = false;
             RequestClose?.Invoke(true);
         }
         else {
             MessageBox.Show("Cannot save changes: source recipe is missing.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            //RequestClose?.Invoke(false);
         }
     }
 
     private void PerformClose() {
-        // Cancel: do nothing to the source, just close
-        RequestClose?.Invoke(false);
+        if (IsDirty) {
+            // Ask dialog service instead of constructing dialog here
+            var owner = Application.Current?.Windows.OfType<RecipeDetailWindow>().FirstOrDefault() ?? Application.Current?.MainWindow;
+            var result = _dialogService.ShowUnsavedChangesDialog(owner);
+
+            if (!result.HasValue) return;
+
+            switch (result.Value) {
+                case DialogResultOption.Save:
+                    PerformSaveCommand.Execute(null);
+                    // PerformSave will invoke RequestClose(true) when done
+                    break;
+
+                case DialogResultOption.Discard:
+                    Recipe = _sourceRecipe?.CopyRecipe();
+                    IsDirty = false;
+                    RequestClose?.Invoke(false);
+                    break;
+
+                case DialogResultOption.Cancel:
+                default:
+                    // stay open
+                    break;
+            }
+        }
+        else {
+            RequestClose?.Invoke(false);
+        }
     }
 
     private void PerformDelete() {
         if (_sourceRecipe != null) {
-            _recipeManager.RemoveRecipe(_sourceRecipe);
+            // confirm deletion with simple yes/no dialog and not dialogservice
+            MessageBoxResult confirm = MessageBox.Show(
+                "Are you sure you want to delete this recipe?",
+                "Confirm Deletion",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm == MessageBoxResult.Yes) {
+                _recipeManager.RemoveRecipe(_sourceRecipe);
+                RequestClose?.Invoke(true);
+            }
         }
-        RequestClose?.Invoke(true);
     }
 }
