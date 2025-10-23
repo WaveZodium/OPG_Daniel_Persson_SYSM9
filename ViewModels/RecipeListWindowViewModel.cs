@@ -32,6 +32,19 @@ public class RecipeListWindowViewModel : ViewModelBase {
         set => Set(ref _loggedInUserName, value);
     }
 
+    // in the VM, add a bindable IsLoggedIn property and initialize it
+    private bool _isLoggedIn;
+    public bool IsLoggedIn {
+        get => _isLoggedIn;
+        private set => Set(ref _isLoggedIn, value);
+    }
+
+    // Added IsAdmin backing field and property so XAML can bind visibility
+    private bool _isAdmin;
+    public bool IsAdmin {
+        get => _isAdmin;
+        private set => Set(ref _isAdmin, value);
+    }
 
     public RelayCommand TryLogoutCommand { get; }
     public RelayCommand OpenMainWindowCommand { get; }
@@ -50,6 +63,8 @@ public class RecipeListWindowViewModel : ViewModelBase {
         // initialize logged-in user display from UserManager
         var logged = _userManager.GetLoggedIn();
         LoggedInUserName = logged != null ? logged.Username : "(not signed in)";
+        IsLoggedIn = _userManager.IsLoggedIn;
+        IsAdmin = _userManager.IsAdmin;
 
         OpenMainWindowCommand = new RelayCommand(_ => OpenMainWindow());
         OpenAddRecipeWindowCommand = new RelayCommand(_ => OpenAddRecipeWindow());

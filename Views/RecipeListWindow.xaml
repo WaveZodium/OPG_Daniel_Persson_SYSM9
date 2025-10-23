@@ -6,6 +6,19 @@
         xmlns:local="clr-namespace:CookMaster.Views"
         mc:Ignorable="d"
         Title="RecipeListWindow" Height="450" Width="800">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <!-- Hover-only style: cursor changes to Hand while IsMouseOver == true -->
+        <Style x:Key="HoverCursorButtonStyle" TargetType="Button">
+            <Setter Property="Cursor" Value="Arrow"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Cursor" Value="Hand"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
     <Grid Margin="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -14,15 +27,28 @@
 
         <!-- Left column: username + buttons -->
         <StackPanel Grid.Column="1" Margin="4,0,0,0">
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+            <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Logged in as:" VerticalAlignment="Center" Margin="4" />
                 <TextBlock Text="{Binding LoggedInUserName}" FontWeight="Bold" Margin="4" VerticalAlignment="Center" />
             </StackPanel>
 
-            <Button Content="If Logged In: Logout" Command="{Binding TryLogoutCommand}" Width="160" Height="30" Margin="4"/>
-            <Button Content="Add Recipe" Command="{Binding OpenAddRecipeWindowCommand}" Width="160" Height="30" Margin="4"/>
-            <Button Content="View Recipe" Command="{Binding OpenRecipeDetailWindowCommand}" Width="160" Height="30" Margin="4"/>
-            <Button Content="If Admin: List Users" Command="{Binding OpenUserListWindowCommand}" Width="160" Height="30" Margin="4"/>
+            <Button Content="Logout" Command="{Binding TryLogoutCommand}" 
+                    Width="160" Height="30" Margin="4, 4, 4, 21"
+                    Background="LightYellow"
+                    Style="{StaticResource HoverCursorButtonStyle}"
+                    Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}"/>
+            
+            <Button Content="Add Recipe" Command="{Binding OpenAddRecipeWindowCommand}" 
+                    Width="160" Height="30" Margin="4"
+                    Style="{StaticResource HoverCursorButtonStyle}"/>
+            <Button Content="View Recipe" Command="{Binding OpenRecipeDetailWindowCommand}" 
+                    Width="160" Height="30" Margin="4"
+                    Style="{StaticResource HoverCursorButtonStyle}"/>
+            <Button Content="List Users" Command="{Binding OpenUserListWindowCommand}" 
+                    Width="160" Height="30" Margin="4"
+                    Style="{StaticResource HoverCursorButtonStyle}"
+                    Background="LightBlue"
+                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
         </StackPanel>
 
         <!-- Right column: recipe list -->

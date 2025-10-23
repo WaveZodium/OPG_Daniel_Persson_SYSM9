@@ -51,6 +51,11 @@ public class UserManager {
     public void SignOut() => _loggedInUser = null;
 
     public User? GetLoggedIn() => _loggedInUser;
+    public bool IsAdmin => _loggedInUser != null && _loggedInUser.Role == UserRole.Admin;
+    public bool IsLoggedIn => _loggedInUser != null;
+
+    // convenience alias if you prefer a property instead of GetLoggedIn()
+    public User? CurrentUser => _loggedInUser;
 
     // ===== seeding =====
     // Idempotent seeding of required default accounts (users only)
