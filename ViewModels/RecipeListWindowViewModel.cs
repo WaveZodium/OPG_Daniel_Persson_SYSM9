@@ -22,7 +22,12 @@ public class RecipeListWindowViewModel : ViewModelBase {
     private Recipe? _selectedRecipe;
     public Recipe? SelectedRecipe {
         get => _selectedRecipe;
-        set => Set(ref _selectedRecipe, value);
+        set {
+            if (Set(ref _selectedRecipe, value)) {
+                // Notify that the command's ability to execute may have changed
+                OpenRecipeDetailWindowCommand.RaiseCanExecuteChanged();
+            }
+        }
     }
 
     // New bindable property for the logged-in user display
@@ -68,7 +73,14 @@ public class RecipeListWindowViewModel : ViewModelBase {
 
         OpenMainWindowCommand = new RelayCommand(_ => OpenMainWindow());
         OpenAddRecipeWindowCommand = new RelayCommand(_ => OpenAddRecipeWindow());
+
         OpenRecipeDetailWindowCommand = new RelayCommand(_ => OpenRecipeDetailWindow());
+
+        // Enable command only when a recipe is selected (canExecute checks SelectedRecipe)
+        OpenRecipeDetailWindowCommand = new RelayCommand(
+            execute => OpenRecipeDetailWindow(), 
+            canExecute => SelectedRecipe != null);
+
         OpenUserListWindowCommand = new RelayCommand(_ => OpenUserListWindow());
         TryLogoutCommand = new RelayCommand(_ => {
             _userManager.SignOut();
