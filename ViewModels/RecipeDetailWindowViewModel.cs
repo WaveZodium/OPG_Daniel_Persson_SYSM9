@@ -12,7 +12,23 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
     private Recipe? _recipe;
     public Recipe? Recipe {
         get => _recipe;
-        set => Set(ref _recipe, value);
+        set {
+            _recipe = value;
+            // notify wrapper properties
+            OnPropertyChanged(nameof(Title));
+        }
+    }
+
+    // Track whether any editable field was changed
+    private bool _isDirty;
+    public bool IsDirty {
+        get => _isDirty;
+        private set {
+            if (Set(ref _isDirty, value)) {
+                // update Save button availability
+                PerformSaveCommand?.RaiseCanExecuteChanged();
+            }
+        }
     }
 
     // Close event for the view (parameter indicates success)
@@ -23,6 +39,18 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
     public bool IsAdmin {
         get => _isAdmin;
         private set => Set(ref _isAdmin, value);
+    }
+
+    // Expose editable Title as a VM property that updates Recipe and sets IsDirty
+    public string Title {
+        get => Recipe?.Title ?? string.Empty;
+        set {
+            if (Recipe == null) return;
+            if (Recipe.Title == value) return;
+            Recipe.Title = value;
+            OnPropertyChanged(); // notify binding for Title
+            IsDirty = true;
+        }
     }
 
     public RelayCommand PerformSaveCommand { get; }
@@ -37,23 +65,27 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         Recipe = recipe;
         IsAdmin = _userManager.IsAdmin;
 
-        PerformSaveCommand = new RelayCommand(_ => PerformSave());
+        // commands: Save enabled only when IsDirty == true
+        PerformSaveCommand = new RelayCommand(_ => PerformSave(), _ => IsDirty);
         PerformCloseCommand = new RelayCommand(_ => PerformClose());
         PerformDeleteCommand = new RelayCommand(_ => PerformDelete());
     }
 
     private void PerformSave() {
+        // persist changes if required (Recipe is updated in-place)
+        // e.g. _recipeManager.UpdateRecipe(Recipe) — implement if needed
+
         // Request the view to close and indicate success
         RequestClose?.Invoke(true);
     }
 
     private void PerformClose() {
-        // Request the view to close and indicate cancellation
-        // which in this case is that no changes were saved.
+        // Request the view to close and indicate cancellation (no changes saved)
         RequestClose?.Invoke(false);
     }
 
     private void PerformDelete() {
+        // implement deletion via manager if desired before closing
         RequestClose?.Invoke(true);
     }
 }

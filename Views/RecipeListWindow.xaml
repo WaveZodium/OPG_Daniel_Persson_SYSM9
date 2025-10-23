@@ -11,8 +11,19 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
+        
+        <!-- Left column: recipe list -->
+        <DataGrid Grid.Column="0" ItemsSource="{Binding Recipes}" 
+                  SelectedItem="{Binding SelectedRecipe}" 
+                  AutoGenerateColumns="False" 
+                  Height="380" Margin="0,0,0,0">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Recipe Name" Binding="{Binding Title}" Width="*"/>
+                <DataGridTextColumn Header="Created By" Binding="{Binding CreatedBy.Username}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
 
-        <!-- Left column: username + buttons -->
+        <!-- Right column: username + buttons -->
         <StackPanel Grid.Column="1" Margin="4,0,0,0">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Logged in as:" VerticalAlignment="Center" Margin="4" />
@@ -34,15 +45,5 @@
                     Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
         </StackPanel>
 
-        <!-- Right column: recipe list -->
-        <DataGrid Grid.Column="0" ItemsSource="{Binding Recipes}" 
-                  SelectedItem="{Binding SelectedRecipe}" 
-                  AutoGenerateColumns="False" 
-                  Height="380" Margin="0,0,0,0">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Recipe Name" Binding="{Binding Title}" Width="*"/>
-                <DataGridTextColumn Header="Created By" Binding="{Binding CreatedBy.Username}" Width="*"/>
-            </DataGrid.Columns>
-        </DataGrid>
     </Grid>
 </Window>

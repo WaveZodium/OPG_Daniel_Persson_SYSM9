@@ -6,12 +6,29 @@
         xmlns:local="clr-namespace:CookMaster.Views"
         mc:Ignorable="d"
         Title="RecipeDetailWindow" Height="450" Width="800">
-    <StackPanel>
-        <Button Content="Save" Command="{Binding PerformSaveCommand}" Width="150" Height="75"/>
-        <Button Content="If Admin: Delete" Width="150" Height="75"
+    <Grid Margin="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Right column: buttons -->
+        <StackPanel Grid.Column="1" Margin="4,0,0,0">
+            <Button Content="Save" Command="{Binding PerformSaveCommand}" Width="160" Height="30" Margin="4"/>
+            <Button Content="If Admin: Delete" Width="160" Height="30" Margin="4"
                 Background="Red"
                 Command="{Binding PerformDeleteCommand}" 
                 Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
-        <Button Content="Close" Command="{Binding PerformCloseCommand}" Width="150" Height="75"/>
-    </StackPanel>
+            <Button Content="Close" Command="{Binding PerformCloseCommand}" Width="160" Height="30" Margin="4"/>
+        </StackPanel>
+
+        <!-- Left column: recipe details -->
+        <StackPanel HorizontalAlignment="Left">
+            <Label Content="Recipe Details Here" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <TextBlock Text="Title" Margin="10"/>
+            <TextBox Width="200" Height="30" Margin="10"
+                     Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+    </Grid>
+    
 </Window>
