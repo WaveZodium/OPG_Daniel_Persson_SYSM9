@@ -8,7 +8,10 @@
         Title="RecipeDetailWindow" Height="450" Width="800">
     <StackPanel>
         <Button Content="Save" Command="{Binding PerformSaveCommand}" Width="150" Height="75"/>
-        <Button Content="If Admin: Delete" Command="{Binding PerformDeleteCommand}" Width="150" Height="75"/>
+        <Button Content="If Admin: Delete" Width="150" Height="75"
+                Background="Red"
+                Command="{Binding PerformDeleteCommand}" 
+                Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
         <Button Content="Close" Command="{Binding PerformCloseCommand}" Width="150" Height="75"/>
     </StackPanel>
 </Window>

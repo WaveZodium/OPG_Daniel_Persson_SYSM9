@@ -22,18 +22,14 @@
             <Button Content="Logout" Command="{Binding TryLogoutCommand}" 
                     Width="160" Height="30" Margin="4, 4, 4, 21"
                     Background="LightYellow"
-                    Style="{StaticResource HoverCursorButtonStyle}"
                     Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}"/>
-            
+
             <Button Content="Add Recipe" Command="{Binding OpenAddRecipeWindowCommand}" 
-                    Width="160" Height="30" Margin="4"
-                    Style="{StaticResource HoverCursorButtonStyle}"/>
+                    Width="160" Height="30" Margin="4"/>
             <Button Content="View Recipe" Command="{Binding OpenRecipeDetailWindowCommand}" 
-                    Width="160" Height="30" Margin="4"
-                    Style="{StaticResource HoverCursorButtonStyle}"/>
+                    Width="160" Height="30" Margin="4"/>
             <Button Content="List Users" Command="{Binding OpenUserListWindowCommand}" 
                     Width="160" Height="30" Margin="4"
-                    Style="{StaticResource HoverCursorButtonStyle}"
                     Background="LightBlue"
                     Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
         </StackPanel>
