@@ -1,6 +1,12 @@
-﻿using CookMaster.Managers;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using CookMaster.Managers;
 using CookMaster.Models;
 using CookMaster.MVVM;
+using System.Windows;
 
 namespace CookMaster.ViewModels;
 
@@ -9,13 +15,35 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
     private readonly UserManager _userManager;
     private readonly IServiceProvider _services;
 
+    // the original source recipe (not edited directly)
+    private readonly Recipe? _sourceRecipe;
+
+    // editable copy exposed to the view
     private Recipe? _recipe;
     public Recipe? Recipe {
         get => _recipe;
-        set {
+        private set {
             _recipe = value;
-            // notify wrapper properties
             OnPropertyChanged(nameof(Title));
+            OnPropertyChanged(nameof(Instructions));
+            OnPropertyChanged(nameof(Ingredients));
+            OnPropertyChanged(nameof(Category));
+        }
+    }
+
+    // Expose enum list for ComboBox
+    public IEnumerable<RecipeCategory> Categories { get; } =
+        Enum.GetValues(typeof(RecipeCategory)).Cast<RecipeCategory>();
+
+    // Bindable wrapper for Category
+    public RecipeCategory Category {
+        get => Recipe?.Category ?? RecipeCategory.Other;
+        set {
+            if (Recipe == null) return;
+            if (Recipe.Category == value) return;
+            Recipe.Category = value;
+            OnPropertyChanged();
+            IsDirty = true;
         }
     }
 
@@ -48,7 +76,29 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
             if (Recipe == null) return;
             if (Recipe.Title == value) return;
             Recipe.Title = value;
-            OnPropertyChanged(); // notify binding for Title
+            OnPropertyChanged();
+            IsDirty = true;
+        }
+    }
+
+    public List<string> Ingredients {
+        get => Recipe?.Ingredients ?? new List<string>();
+        set {
+            if (Recipe == null) return;
+            if (Recipe.Ingredients == value) return;
+            Recipe.Ingredients = value;
+            OnPropertyChanged();
+            IsDirty = true;
+        }
+    }
+
+    public string Instructions {
+        get => Recipe?.Instructions ?? string.Empty;
+        set {
+            if (Recipe == null) return;
+            if (Recipe.Instructions == value) return;
+            Recipe.Instructions = value;
+            OnPropertyChanged();
             IsDirty = true;
         }
     }
@@ -57,35 +107,42 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
     public RelayCommand PerformDeleteCommand { get; }
     public RelayCommand PerformCloseCommand { get; }
 
-    public RecipeDetailWindowViewModel(RecipeManager recipeManager, UserManager userManager, IServiceProvider services, Recipe? recipe) {
+    public RecipeDetailWindowViewModel(RecipeManager recipeManager, UserManager userManager, IServiceProvider services, Recipe? sourceRecipe) {
         _recipeManager = recipeManager;
         _userManager = userManager;
         _services = services;
 
-        Recipe = recipe;
+        Recipe = sourceRecipe?.CopyRecipe();
         IsAdmin = _userManager.IsAdmin;
+        _sourceRecipe = sourceRecipe;
 
-        // commands: Save enabled only when IsDirty == true
         PerformSaveCommand = new RelayCommand(_ => PerformSave(), _ => IsDirty);
         PerformCloseCommand = new RelayCommand(_ => PerformClose());
         PerformDeleteCommand = new RelayCommand(_ => PerformDelete());
     }
 
     private void PerformSave() {
-        // persist changes if required (Recipe is updated in-place)
-        // e.g. _recipeManager.UpdateRecipe(Recipe) — implement if needed
-
-        // Request the view to close and indicate success
-        RequestClose?.Invoke(true);
+        if (Recipe == null) return;
+        if (_sourceRecipe != null) {
+            // Edit existing recipe
+            _sourceRecipe.EditRecipe(Recipe.Title, Recipe.Ingredients, Recipe.Instructions, Recipe.Category);
+            RequestClose?.Invoke(true);
+        }
+        else {
+            MessageBox.Show("Cannot save changes: source recipe is missing.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            //RequestClose?.Invoke(false);
+        }
     }
 
     private void PerformClose() {
-        // Request the view to close and indicate cancellation (no changes saved)
+        // Cancel: do nothing to the source, just close
         RequestClose?.Invoke(false);
     }
 
     private void PerformDelete() {
-        // implement deletion via manager if desired before closing
+        if (_sourceRecipe != null) {
+            _recipeManager.RemoveRecipe(_sourceRecipe);
+        }
         RequestClose?.Invoke(true);
     }
 }

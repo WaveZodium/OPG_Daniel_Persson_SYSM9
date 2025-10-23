@@ -16,5 +16,6 @@ public enum RecipeCategory {
     SideDish,
     Snack,
     Soup,
-    Other
+    Other,
+    Unknown
 }
