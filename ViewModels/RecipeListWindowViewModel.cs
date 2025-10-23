@@ -25,7 +25,7 @@ public class RecipeListWindowViewModel : ViewModelBase {
         set {
             if (Set(ref _selectedRecipe, value)) {
                 // Notify that the command's ability to execute may have changed
-                OpenRecipeDetailWindowCommand.RaiseCanExecuteChanged();
+                OpenRecipeDetailWindowCommand?.RaiseCanExecuteChanged();
             }
         }
     }
@@ -74,12 +74,8 @@ public class RecipeListWindowViewModel : ViewModelBase {
         OpenMainWindowCommand = new RelayCommand(_ => OpenMainWindow());
         OpenAddRecipeWindowCommand = new RelayCommand(_ => OpenAddRecipeWindow());
 
-        OpenRecipeDetailWindowCommand = new RelayCommand(_ => OpenRecipeDetailWindow());
-
-        // Enable command only when a recipe is selected (canExecute checks SelectedRecipe)
-        OpenRecipeDetailWindowCommand = new RelayCommand(
-            execute => OpenRecipeDetailWindow(), 
-            canExecute => SelectedRecipe != null);
+        // canExecute checks selection
+        OpenRecipeDetailWindowCommand = new RelayCommand(_ => OpenRecipeDetailWindow(), _ => SelectedRecipe != null);
 
         OpenUserListWindowCommand = new RelayCommand(_ => OpenUserListWindow());
         TryLogoutCommand = new RelayCommand(_ => {
@@ -111,15 +107,34 @@ public class RecipeListWindowViewModel : ViewModelBase {
 
         // ShowDialog blocks until closed; scope is disposed when leaving using block
         window.ShowDialog();
+
+        // Refresh the recipe list after adding a new recipe
+        Recipes = new ObservableCollection<Recipe>(_recipeManager.GetAllRecipes());
     }
 
     private void OpenRecipeDetailWindow() {
-        // Use a scope and open RecipeDetailWindow as a modal dialog; dispose immediately after
-        using var scope = _services.CreateScope();
-        var window = scope.ServiceProvider.GetRequiredService<RecipeDetailWindow>();
+        if (SelectedRecipe == null) return;
 
-        // ShowDialog blocks until closed; scope is disposed when leaving using block
-        window.ShowDialog();
+        var owner = Application.Current?.Windows.OfType<RecipeListWindow>().FirstOrDefault();
+
+        using var scope = _services.CreateScope();
+
+        // Resolve VM factory and create the VM with runtime Recipe
+        var vmFactory = scope.ServiceProvider.GetRequiredService<Func<Recipe, RecipeDetailWindowViewModel>>();
+        var vm = vmFactory(SelectedRecipe);
+
+        // Create the window with that VM (DI resolves other ctor args if any)
+        var window = ActivatorUtilities.CreateInstance<RecipeDetailWindow>(scope.ServiceProvider, vm);
+
+        if (owner != null) window.Owner = owner;
+
+        // ShowDialog returns the DialogResult (true = saved/confirmed, false/null = cancelled/closed)
+        var dialogResult = window.ShowDialog();
+
+        // Refresh list only when dialog indicated success (true)
+        if (dialogResult == true) {
+            Recipes = new ObservableCollection<Recipe>(_recipeManager.GetAllRecipes());
+        }
     }
 
     private void OpenUserListWindow() {

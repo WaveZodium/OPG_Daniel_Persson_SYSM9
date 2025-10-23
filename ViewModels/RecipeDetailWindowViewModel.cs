@@ -1,4 +1,5 @@
 ﻿using CookMaster.Managers;
+using CookMaster.Models;
 using CookMaster.MVVM;
 
 namespace CookMaster.ViewModels;
@@ -7,6 +8,12 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
     private readonly RecipeManager _recipeManager;
     private readonly UserManager _userManager;
     private readonly IServiceProvider _services;
+
+    private Recipe? _recipe;
+    public Recipe? Recipe {
+        get => _recipe;
+        set => Set(ref _recipe, value);
+    }
 
     // Close event for the view (parameter indicates success)
     public event Action<bool>? RequestClose;
@@ -22,11 +29,12 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
     public RelayCommand PerformDeleteCommand { get; }
     public RelayCommand PerformCloseCommand { get; }
 
-    public RecipeDetailWindowViewModel(RecipeManager recipeManager, UserManager userManager, IServiceProvider services) {
+    public RecipeDetailWindowViewModel(RecipeManager recipeManager, UserManager userManager, IServiceProvider services, Recipe? recipe) {
         _recipeManager = recipeManager;
         _userManager = userManager;
         _services = services;
 
+        Recipe = recipe;
         IsAdmin = _userManager.IsAdmin;
 
         PerformSaveCommand = new RelayCommand(_ => PerformSave());

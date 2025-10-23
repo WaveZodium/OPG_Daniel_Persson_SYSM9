@@ -1,4 +1,5 @@
 ﻿using CookMaster.Managers;
+using CookMaster.Models;
 using CookMaster.ViewModels;
 using CookMaster.Views;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,6 +38,17 @@ public partial class App : Application {
 
         services.AddTransient<UserDetailWindowViewModel>();
         services.AddTransient<UserDetailWindow>();
+
+        // Factory: create a RecipeDetailWindowViewModel given a runtime Recipe.
+        services.AddTransient<Func<Recipe, RecipeDetailWindowViewModel>>(sp => recipe
+            => ActivatorUtilities.CreateInstance<RecipeDetailWindowViewModel>(sp, recipe));
+        // Factory: create a RecipeDetailWindow given a runtime Recipe.
+        // The factory creates the RecipeDetailWindowViewModel via
+        // ActivatorUtilities so DI resolves other dependencies.
+        services.AddTransient<Func<Recipe, RecipeDetailWindow>>(sp => recipe => {
+            var vm = ActivatorUtilities.CreateInstance<RecipeDetailWindowViewModel>(sp, recipe);
+            return new RecipeDetailWindow(vm);
+        });
 
         Services = services.BuildServiceProvider();
 
