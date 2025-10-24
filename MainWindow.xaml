@@ -5,15 +5,35 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CookMaster"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800"
+        Background="AliceBlue">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/SteamingPot.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
     <Grid>
         <StackPanel Width="auto" Height="auto" VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="Username:" Margin="3"/>
-            <TextBox Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="3"/>
+            <Image Source="{StaticResource SteamingPotImage}"
+                   Width="80" Height="80" Stretch="Uniform"
+                   Margin="0,0,0,0" HorizontalAlignment="Center"/>
+            <TextBlock Text="CookMaster" FontSize="24" FontWeight="Bold" 
+                       HorizontalAlignment="Center" Margin="0,0,0,30"/>
 
-            <TextBlock Text="Password:" Margin="3"/>
+            <TextBlock Text="Username:" Margin="3" FontSize="14" FontWeight="DemiBold"/>
+            <TextBox Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="3, 0, 3, 3" Padding="3"/>
+
+            <TextBlock Text="Password:" Margin="3" FontSize="14" FontWeight="DemiBold"/>
             <!-- Later, switch to PasswordBox for security. -->
-            <TextBox Text="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="3"/>
+            <TextBox Text="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="3, 0, 3, 3" Padding="3"/>
+
+            <TextBlock FontSize="12" HorizontalAlignment="Center" TextAlignment="Center" Margin="3">
+                <Hyperlink Command="{Binding ForgotPasswordCommand}">Forgot password?</Hyperlink>
+            </TextBlock>
 
             <StackPanel Orientation="Horizontal" Margin="0 21 0 0">
                 <Button Content="Login" Command="{Binding TryLoginCommand}" 

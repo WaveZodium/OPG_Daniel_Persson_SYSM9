@@ -34,6 +34,7 @@ public class MainWindowViewModel : ViewModelBase {
     public RelayCommand TryLoginCommand { get; }
     public RelayCommand OpenRecipeListWindowCommand { get; }
     public RelayCommand OpenRegisterWindowCommand { get; }
+    public RelayCommand ForgotPasswordCommand { get; }
 
     // Inject UserManager so MainWindowViewModel can access user state/operations
     public MainWindowViewModel(UserManager userManager, IServiceProvider services) {
@@ -44,6 +45,7 @@ public class MainWindowViewModel : ViewModelBase {
         TryLoginCommand = new RelayCommand(_ => TryLogin(), _ => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password));
         OpenRecipeListWindowCommand = new RelayCommand(_ => OpenRecipeListWindow());
         OpenRegisterWindowCommand = new RelayCommand(_ => OpenRegisterWindow());
+        ForgotPasswordCommand = new RelayCommand(_ => ForgotPassword());
     }
 
     private void TryLogin() {
@@ -84,5 +86,11 @@ public class MainWindowViewModel : ViewModelBase {
 
         // ShowDialog blocks until closed; scope is disposed when leaving using block
         window.ShowDialog();
+    }
+
+    private void ForgotPassword() {
+        // Caught by the ViewModel when the Hyperlink is clicked.
+        // Replace this with your reset flow (open a window, send email, navigate, etc.)
+        MessageBox.Show("Forgot password clicked. Implement the password recovery flow in ForgotPassword().", "Forgot Password", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 }
