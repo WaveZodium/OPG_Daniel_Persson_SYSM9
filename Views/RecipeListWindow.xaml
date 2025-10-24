@@ -7,16 +7,50 @@
         mc:Ignorable="d"
         Title="RecipeListWindow" Height="450" Width="800">
     <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
+            <Image Source="{StaticResource SteamingPotImage}" HorizontalAlignment="Center"
+                   Width="30" Height="30" Stretch="Uniform" Margin="0,0,0,0"/>
+            <TextBlock Text="Recipe List" FontSize="20" FontWeight="Bold" Margin="4" />
+        </StackPanel>
+
+
+        <Grid Grid.Row="0" Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
         
+            <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center">
+                <TextBlock Text="Logged in as:" Margin="0,0,0,3" />
+                <TextBlock Text="{Binding LoggedInUserName}" FontWeight="Bold" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="8,0,0,0">
+
+                <!-- Icon button that triggers logout; icon color changes on hover.
+                     Removed hover Background so only the icon color changes. -->
+                <TextBlock FontSize="12" HorizontalAlignment="Right" TextAlignment="Center" Margin="3" 
+                           Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}">
+                    <Hyperlink Command="{Binding TryLogoutCommand}">Logout</Hyperlink>
+                </TextBlock>
+
+            </StackPanel>
+        </Grid>
+
         <!-- Left column: recipe list -->
-        <DataGrid Grid.Column="0" ItemsSource="{Binding Recipes}" 
+        <DataGrid Grid.Row="2" Grid.Column="0" ItemsSource="{Binding Recipes}" 
                   SelectedItem="{Binding SelectedRecipe}" 
                   AutoGenerateColumns="False" 
-                  Height="380" Margin="0,0,0,0">
+                  Height="auto" Margin="0,0,0,0">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Recipe Name" Binding="{Binding Title}" Width="*"/>
                 <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="*"/>
@@ -25,23 +59,13 @@
         </DataGrid>
 
         <!-- Right column: username + buttons -->
-        <StackPanel Grid.Column="1" Margin="4,0,0,0">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Logged in as:" VerticalAlignment="Center" Margin="4" />
-                <TextBlock Text="{Binding LoggedInUserName}" FontWeight="Bold" Margin="4" VerticalAlignment="Center" />
-            </StackPanel>
-
-            <Button Content="Logout" Command="{Binding TryLogoutCommand}" 
-                    Width="160" Height="30" Margin="4, 4, 4, 21"
-                    Background="LightYellow"
-                    Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}"/>
-
+        <StackPanel Grid.Row="2" Grid.Column="1" Margin="4,0,0,0">
             <Button Content="Add Recipe" Command="{Binding OpenAddRecipeWindowCommand}" 
-                    Width="160" Height="30" Margin="4"/>
+                    Width="160" Height="30" Margin="0,0,0,4"/>
             <Button Content="View Recipe" Command="{Binding OpenRecipeDetailWindowCommand}" 
-                    Width="160" Height="30" Margin="4"/>
+                    Width="160" Height="30" Margin="0,4"/>
             <Button Content="List Users" Command="{Binding OpenUserListWindowCommand}" 
-                    Width="160" Height="30" Margin="4"
+                    Width="160" Height="30" Margin="0,4"
                     Background="LightBlue"
                     Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
         </StackPanel>

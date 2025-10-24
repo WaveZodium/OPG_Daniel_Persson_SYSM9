@@ -1,0 +1,29 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <DrawingImage x:Key="LogoutIcon">
+        <DrawingImage.Drawing>
+            <!-- original drawing group from your converted XAML -->
+            <DrawingGroup xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <DrawingGroup x:Name="DrawingLayer">
+                    <DrawingGroup.ClipGeometry>
+                        <RectangleGeometry Rect="0,0,212.6,212.6" />
+                    </DrawingGroup.ClipGeometry>
+                    <DrawingGroup x:Name="layer1" Transform="1,0,0,1,-241.43,-409.02">
+                        <GeometryDrawing x:Name="path15809" Brush="#FF000000">
+                            <GeometryDrawing.Geometry>
+                                <PathGeometry FillRule="EvenOdd" Figures="M295.02,409.02L294.58,444.46 418.59,444.46 418.59,586.19 294.58,586.19 294.58,621.62 454.03,621.62 454.03,409.02 295.02,409.02z" />
+                            </GeometryDrawing.Geometry>
+                        </GeometryDrawing>
+                        <GeometryDrawing x:Name="path15815" Brush="#FF000000">
+                            <GeometryDrawing.Geometry>
+                                <PathGeometry FillRule="Nonzero" Figures="M400.88,533.04L312.29,533.04 347.73,568.47 294.58,568.47 241.43,515.32 294.58,462.17 347.73,462.17 312.29,497.61 400.88,497.61 400.88,533.04z" />
+                            </GeometryDrawing.Geometry>
+                        </GeometryDrawing>
+                    </DrawingGroup>
+                </DrawingGroup>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+</ResourceDictionary>

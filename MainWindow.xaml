@@ -4,17 +4,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CookMaster"
+        xmlns:behaviors="clr-namespace:CookMaster.Behaviors"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         Background="AliceBlue">
-
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resources/SteamingPot.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </Window.Resources>
 
     <Grid>
         <StackPanel Width="auto" Height="auto" VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -25,7 +18,9 @@
                        HorizontalAlignment="Center" Margin="0,0,0,30"/>
 
             <TextBlock Text="Username:" Margin="3" FontSize="14" FontWeight="DemiBold"/>
-            <TextBox Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="3, 0, 3, 3" Padding="3"/>
+            <TextBox Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                     Margin="3, 0, 3, 3" Padding="3"
+                     behaviors:FocusBehavior.IsFocused="{Binding FocusUsername, Mode=TwoWay}"/>
 
             <TextBlock Text="Password:" Margin="3" FontSize="14" FontWeight="DemiBold"/>
             <!-- Later, switch to PasswordBox for security. -->

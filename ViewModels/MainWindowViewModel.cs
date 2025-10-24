@@ -31,6 +31,13 @@ public class MainWindowViewModel : ViewModelBase {
         }
     }
 
+    // New MVVM-friendly focus request property (bind TwoWay to attached behavior)
+    private bool _focusUsername = true;
+    public bool FocusUsername {
+        get => _focusUsername;
+        set => Set(ref _focusUsername, value);
+    }
+
     public RelayCommand TryLoginCommand { get; }
     public RelayCommand OpenRecipeListWindowCommand { get; }
     public RelayCommand OpenRegisterWindowCommand { get; }
@@ -46,6 +53,9 @@ public class MainWindowViewModel : ViewModelBase {
         OpenRecipeListWindowCommand = new RelayCommand(_ => OpenRecipeListWindow());
         OpenRegisterWindowCommand = new RelayCommand(_ => OpenRegisterWindow());
         ForgotPasswordCommand = new RelayCommand(_ => ForgotPassword());
+
+        // Request initial focus on the username box (bound to the attached behavior)
+        FocusUsername = true;
     }
 
     private void TryLogin() {

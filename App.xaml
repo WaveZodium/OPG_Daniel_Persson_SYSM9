@@ -4,8 +4,12 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!-- relative path to the file you added -->
+                <!-- app-wide shared resources -->
                 <ResourceDictionary Source="Resources/SharedResources.xaml"/>
+                
+                <!-- make the SteamingPot drawing available everywhere -->
+                <ResourceDictionary Source="Resources/SteamingPot.xaml"/>
+                <ResourceDictionary Source="Resources/LogoutIcon.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <!-- other app resources can go here -->
         </ResourceDictionary>
