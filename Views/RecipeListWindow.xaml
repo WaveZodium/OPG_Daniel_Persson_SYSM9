@@ -50,7 +50,8 @@
         <DataGrid Grid.Row="2" Grid.Column="0" ItemsSource="{Binding Recipes}" 
                   SelectedItem="{Binding SelectedRecipe}" 
                   AutoGenerateColumns="False" 
-                  Height="auto" Margin="0,0,0,0">
+                  Height="auto" Margin="0,0,0,0"
+                  IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Recipe Name" Binding="{Binding Title}" Width="*"/>
                 <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="*"/>
@@ -60,14 +61,19 @@
 
         <!-- Right column: username + buttons -->
         <StackPanel Grid.Row="2" Grid.Column="1" Margin="4,0,0,0">
-            <Button Content="Add Recipe" Command="{Binding OpenAddRecipeWindowCommand}" 
-                    Width="160" Height="30" Margin="0,0,0,4"/>
-            <Button Content="View Recipe" Command="{Binding OpenRecipeDetailWindowCommand}" 
-                    Width="160" Height="30" Margin="0,4"/>
-            <Button Content="List Users" Command="{Binding OpenUserListWindowCommand}" 
-                    Width="160" Height="30" Margin="0,4"
-                    Background="LightBlue"
-                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Add Recipe" Width="160" Height="30" Margin="0,0,0,4"
+                    ToolTip="Add a new recipe"
+                    Command="{Binding OpenAddRecipeWindowCommand}" 
+                    Style="{StaticResource ButtonLightGrayStyle}"/>
+            <Button Content="View Recipe" Width="160" Height="30" Margin="0,4"
+                    Command="{Binding OpenRecipeDetailWindowCommand}" 
+                    ToolTip="View details of the selected recipe"
+                    Style="{StaticResource ButtonLightGrayStyle}"/>
+            <Button Content="List Users" Width="160" Height="30" Margin="0,4"
+                    Command="{Binding OpenUserListWindowCommand}"
+                    ToolTip="View the list of users"
+                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"
+                    Style="{StaticResource ButtonBlueStyle}"/>
         </StackPanel>
 
     </Grid>

@@ -3,16 +3,141 @@
 
     <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
-    <!--
-    Implicit style: applies to all Buttons. 
-    Explicit style: with x:Key and applied via StaticResource. Aka named/keyed style.
-    -->
-    <Style TargetType="Button">
+    <!-- Color palette -->
+
+    <!-- Blue -->
+    <SolidColorBrush x:Key="BlueBrush">#FFADD8E6</SolidColorBrush>
+    <SolidColorBrush x:Key="BlueHoverBrush">#FF63A0F0</SolidColorBrush>
+    <SolidColorBrush x:Key="BluePressedBrush">#FF2B6ED9</SolidColorBrush>
+
+    <!-- Save (green) -->
+    <SolidColorBrush x:Key="SaveBrush">#FF4CAF50</SolidColorBrush>
+    <SolidColorBrush x:Key="SaveHoverBrush">#FF2E7D32</SolidColorBrush>
+    <SolidColorBrush x:Key="SavePressedBrush">#FF1B5E20</SolidColorBrush>
+
+    <!-- Delete (red) -->
+    <SolidColorBrush x:Key="DangerBrush">#FFE53935</SolidColorBrush>
+    <SolidColorBrush x:Key="DangerHoverBrush">#FFB71C1C</SolidColorBrush>
+    <SolidColorBrush x:Key="DangerPressedBrush">#FF8E1414</SolidColorBrush>
+
+    <!-- Light Gray (default) - adjusted: darker base, stronger hover/pressed -->
+    <SolidColorBrush x:Key="LightGrayBrush">#FFE0E0E0</SolidColorBrush>
+    <SolidColorBrush x:Key="LightGrayHoverBrush">#FFD0D0D0</SolidColorBrush>
+    <SolidColorBrush x:Key="LightGrayPressedBrush">#FFBFBFBF</SolidColorBrush>
+
+    <SolidColorBrush x:Key="PrimaryForeground">#FFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="SecondaryForeground">#FF000000</SolidColorBrush>
+    <SolidColorBrush x:Key="DisabledForeground">#99FFFFFF</SolidColorBrush>
+
+    <!-- Reusable rounded button template (keeps ControlTemplate in one place) -->
+    <ControlTemplate x:Key="RoundedButtonTemplate" TargetType="Button">
+        <Border x:Name="Border"
+            Background="{TemplateBinding Background}"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="{TemplateBinding BorderThickness}"
+            CornerRadius="2"
+            Padding="{TemplateBinding Padding}">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                        RecognizesAccessKey="True" />
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Border" Property="Opacity" Value="0.6"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!-- Base style - small visual defaults -->
+    <Style x:Key="BaseButtonStyle" TargetType="Button">
+        <Setter Property="Template" Value="{StaticResource RoundedButtonTemplate}" />
         <Setter Property="Cursor" Value="Arrow" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="MinWidth" Value="80" />
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="BorderThickness" Value="0" />
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="Cursor" Value="Hand" />
             </Trigger>
         </Style.Triggers>
     </Style>
+
+    <!-- Save -->
+    <Style x:Key="ButtonSaveStyle" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+        <Setter Property="Background" Value="{StaticResource SaveBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource SavePressedBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource PrimaryForeground}" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource SaveHoverBrush}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{StaticResource SavePressedBrush}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="#FFBDBDBD" />
+                <Setter Property="Foreground" Value="{StaticResource DisabledForeground}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Danger (Delete) -->
+    <Style x:Key="ButtonDangerStyle" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+        <Setter Property="Background" Value="{StaticResource DangerBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource DangerPressedBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource PrimaryForeground}" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource DangerHoverBrush}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{StaticResource DangerPressedBrush}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="#FFBDBDBD" />
+                <Setter Property="Foreground" Value="{StaticResource DisabledForeground}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Blue -->
+    <Style x:Key="ButtonBlueStyle" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+        <Setter Property="Background" Value="{StaticResource BlueBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BluePressedBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource SecondaryForeground}" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource BlueHoverBrush}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{StaticResource BluePressedBrush}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="#FFBDBDBD" />
+                <Setter Property="Foreground" Value="{StaticResource DisabledForeground}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Light Gray (default) -->
+    <Style x:Key="ButtonLightGrayStyle" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+        <Setter Property="Background" Value="{StaticResource LightGrayBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource LightGrayPressedBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource SecondaryForeground}" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource LightGrayHoverBrush}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{StaticResource LightGrayPressedBrush}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="#FFBDBDBD" />
+                <Setter Property="Foreground" Value="{StaticResource DisabledForeground}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- keep a minimal implicit style for cursor behavior (preserves existing behavior) -->
+    <Style TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}" />
 </ResourceDictionary>

@@ -69,6 +69,10 @@ public class UserManager {
         if (!UserExists("user")) {
             CreateUser("user", "password", UserRole.User, Country.Sweden);
         }
+
+        if (!UserExists("user2")) {
+            CreateUser("user2", "password", UserRole.User, Country.Sweden);
+        }
     }
 
     // placeholder methods left in place for assignment

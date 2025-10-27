@@ -56,5 +56,34 @@ public class RecipeManager {
         if (!RecipeExists("Pasta Carbonara")) {
             AddRecipe(new Recipe("Pasta Carbonara", new List<string>{ "Pasta", "Eggs", "Parmesan cheese" }, "Cook pasta and mix with eggs and cheese", RecipeCategory.MainCourse, user));
         }
+        if (!RecipeExists("Spaghetti Bolognese")) {
+            // seed more recipes as user2
+            AddRecipe(new Recipe("Spaghetti Bolognese", new List<string> { "Spaghetti", "Ground beef", "Tomato sauce" }, "Cook spaghetti and prepare sauce", RecipeCategory.MainCourse, user));
+        }
+        if (!RecipeExists("Chicken Curry")) {
+            AddRecipe(new Recipe("Chicken Curry", new List<string> { "Chicken", "Curry powder", "Coconut milk" }, "Cook chicken and simmer in curry sauce", RecipeCategory.MainCourse, user));
+        }
+
+        var user2 = _userManager.FindUser("user2");
+
+        if (user2 != null && !RecipeExists("Caesar Salad")) {
+            AddRecipe(new Recipe("Caesar Salad", new List<string>{ "Lettuce", "Croutons", "Caesar dressing" }, "Toss ingredients together", RecipeCategory.Salad, user2));
+        // seed more recipes as user2
+        }
+        if (user2 != null && !RecipeExists("Tomato Soup")) {
+            AddRecipe(new Recipe("Tomato Soup", new List<string> { "Tomatoes", "Onion", "Garlic", "Vegetable broth" }, "Cook and blend ingredients", RecipeCategory.Soup, user2));
+        }
+        if (user2 != null && !RecipeExists("Grilled Cheese Sandwich")) {
+            AddRecipe(new Recipe("Grilled Cheese Sandwich", new List<string> { "Bread", "Cheese", "Butter" }, "Assemble and grill the sandwich", RecipeCategory.Snack, user2));
+        }
+
+
+        var admin = _userManager.FindUser("admin");
+
+        if (admin != null && !RecipeExists("Chocolate Cake")) {
+            AddRecipe(new Recipe("Chocolate Cake", new List<string>{ "Flour", "Cocoa powder", "Sugar", "Eggs", "Butter" }, "Mix ingredients and bake", RecipeCategory.Dessert, admin));
+        }
+        
+
     }
 }

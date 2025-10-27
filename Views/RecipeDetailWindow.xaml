@@ -10,14 +10,22 @@
 
         <!-- Right column: buttons -->
         <StackPanel Grid.Column="1" Margin="4,0,0,0">
-            <Button Content="Save &amp; Close" Command="{Binding PerformSaveCommand}"
-                    Width="160" Height="30" Margin="4" ToolTip="Save changes and close the window"/>
-            <Button Content="If Admin: Delete" Width="160" Height="30" Margin="4"
-                Background="Red"
-                Command="{Binding PerformDeleteCommand}" 
-                Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
-            <Button Content="Close" Command="{Binding PerformCloseCommand}" 
-                    Width="160" Height="30" Margin="4"/>
+            <Button Content="Save &amp; Close" Width="160" Height="30" Margin="4" 
+                    ToolTip="Save changes and close the window"
+                    Command="{Binding PerformSaveCommand}"
+                    Visibility="{Binding IsOwnerOrAdmin, Converter={StaticResource BoolToVis}}"
+                    Style="{StaticResource ButtonSaveStyle}"/>
+            <!-- Visible to admin OR the recipe owner -->
+            <Button Content="Delete" Width="160" Height="30" Margin="4"
+                    ToolTip="Delete this recipe"
+                    Command="{Binding PerformDeleteCommand}" 
+                    Visibility="{Binding IsOwnerOrAdmin, Converter={StaticResource BoolToVis}}"
+                    Style="{StaticResource ButtonDangerStyle}"/>
+
+            <Button Content="Close" Width="160" Height="30" Margin="4"
+                    ToolTip="Close without saving changes"
+                    Command="{Binding PerformCloseCommand}"
+                    Style="{StaticResource ButtonLightGrayStyle}"/>
         </StackPanel>
 
         <!-- Left column: recipe details -->

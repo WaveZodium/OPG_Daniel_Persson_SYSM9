@@ -3,11 +3,6 @@ using CookMaster.Models;
 using CookMaster.MVVM;
 using CookMaster.Services;
 using CookMaster.Views;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Linq;
 using System.Windows;
 
 namespace CookMaster.ViewModels;
@@ -16,7 +11,6 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
     private readonly RecipeManager _recipeManager;
     private readonly UserManager _userManager;
     private readonly IDialogService _dialogService;
-    private readonly IServiceProvider _services;
 
     // the original source recipe (not edited directly)
     private readonly Recipe? _sourceRecipe;
@@ -31,6 +25,10 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
             OnPropertyChanged(nameof(Instructions));
             OnPropertyChanged(nameof(Ingredients));
             OnPropertyChanged(nameof(Category));
+            // update dependent availability flags when recipe changes
+            UpdateOwnerOrAdmin();
+            PerformSaveCommand?.RaiseCanExecuteChanged();
+            PerformDeleteCommand?.RaiseCanExecuteChanged();
         }
     }
 
@@ -65,11 +63,17 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
     // Close event for the view (parameter indicates success)
     public event Action<bool>? RequestClose;
 
-    // Added IsAdmin backing field and property so XAML can bind visibility
-    private bool _isAdmin;
-    public bool IsAdmin {
-        get => _isAdmin;
-        private set => Set(ref _isAdmin, value);
+    // Whether current user is owner OR admin (affects Save/Delete availability)
+    private bool _isOwnerOrAdmin;
+    public bool IsOwnerOrAdmin {
+        get => _isOwnerOrAdmin;
+        private set {
+            if (Set(ref _isOwnerOrAdmin, value)) {
+                // update Save and Delete command availability when this changes
+                PerformSaveCommand?.RaiseCanExecuteChanged();
+                PerformDeleteCommand?.RaiseCanExecuteChanged();
+            }
+        }
     }
 
     // Expose editable Title as a VM property that updates Recipe and sets IsDirty
@@ -114,21 +118,31 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         RecipeManager recipeManager,
         UserManager userManager,
         IDialogService dialogService,
-        IServiceProvider services,
-        Recipe? sourceRecipe)
-    {
+        Recipe? sourceRecipe) {
         _recipeManager = recipeManager;
         _userManager = userManager;
         _dialogService = dialogService;
-        _services = services;
-
-        Recipe = sourceRecipe?.CopyRecipe();
-        IsAdmin = _userManager.IsAdmin;
         _sourceRecipe = sourceRecipe;
 
-        PerformSaveCommand = new RelayCommand(_ => PerformSave(), _ => IsDirty);
+        Recipe = sourceRecipe?.CopyRecipe();
+        UpdateOwnerOrAdmin();
+
+        // Save allowed only when there are unsaved changes AND user is owner or admin
+        PerformSaveCommand = new RelayCommand(_ => PerformSave(), _ => IsDirty && IsOwnerOrAdmin);
+
         PerformCloseCommand = new RelayCommand(_ => PerformClose());
-        PerformDeleteCommand = new RelayCommand(_ => PerformDelete());
+        // CanExecute for delete depends on owner/admin
+        PerformDeleteCommand = new RelayCommand(_ => PerformDelete(), _ => IsOwnerOrAdmin);
+    }
+
+    private void UpdateOwnerOrAdmin() {
+        var current = _userManager.GetLoggedIn();
+        if (Recipe == null || current == null) {
+            IsOwnerOrAdmin = _userManager.IsAdmin; // reflect admin even if no detailed recipe/current user
+            return;
+        }
+
+        IsOwnerOrAdmin = _userManager.IsAdmin || current.Id == Recipe.CreatedBy.Id;
     }
 
     private void PerformSave() {
@@ -145,7 +159,7 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
     }
 
     private void PerformClose() {
-        if (IsDirty) {
+        if (IsDirty && IsOwnerOrAdmin) {
             // Ask dialog service instead of constructing dialog here
             var owner = Application.Current?.Windows.OfType<RecipeDetailWindow>().FirstOrDefault() ?? Application.Current?.MainWindow;
             var result = _dialogService.ShowUnsavedChangesDialog(owner);
@@ -176,18 +190,18 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
     }
 
     private void PerformDelete() {
-        if (_sourceRecipe != null) {
-            // confirm deletion with simple yes/no dialog and not dialogservice
-            MessageBoxResult confirm = MessageBox.Show(
-                "Are you sure you want to delete this recipe?",
-                "Confirm Deletion",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+        if (!IsOwnerOrAdmin || _sourceRecipe == null) return;
 
-            if (confirm == MessageBoxResult.Yes) {
-                _recipeManager.RemoveRecipe(_sourceRecipe);
-                RequestClose?.Invoke(true);
-            }
+        // Use dialog service instead of MessageBox
+        var owner = Application.Current?.Windows.OfType<RecipeDetailWindow>().FirstOrDefault() ?? Application.Current?.MainWindow;
+        var confirm = _dialogService.ShowDeleteConfirmationDialog(owner);
+
+        // If dialog wasn't shown or closed unexpectedly, do nothing
+        if (!confirm.HasValue) return;
+
+        if (confirm.Value) {
+            _recipeManager.RemoveRecipe(_sourceRecipe);
+            RequestClose?.Invoke(true);
         }
     }
 }
