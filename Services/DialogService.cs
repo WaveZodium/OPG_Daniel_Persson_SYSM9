@@ -1,6 +1,5 @@
-using System.Linq;
-using System.Windows;
 using CookMaster.Views;
+using System.Windows;
 
 namespace CookMaster.Services;
 
@@ -26,5 +25,17 @@ public class DialogService : IDialogService {
             UnsavedChangesDialog.DialogResultOption.Cancel => DialogResultOption.Cancel,
             _ => null
         };
+    }
+
+    public bool? ShowDeleteConfirmationDialog(Window? owner = null) {
+        var dlg = new ConfirmDeleteDialog();
+        if (owner != null) dlg.Owner = owner;
+
+        // ShowDialog returns nullable bool: true = Yes, false = No, null = closed unexpectedly
+        var shown = dlg.ShowDialog();
+
+        if (!shown.HasValue) return null;
+
+        return shown.Value;
     }
 }

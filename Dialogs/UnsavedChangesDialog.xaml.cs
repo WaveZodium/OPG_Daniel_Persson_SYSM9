@@ -1,16 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using CookMaster.ViewModels;
 
 namespace CookMaster.Views {
     /// <summary>
@@ -23,17 +13,31 @@ namespace CookMaster.Views {
 
         public UnsavedChangesDialog() {
             InitializeComponent();
+
+            var vm = new UnsavedChangesDialogViewModel();
+            vm.RequestClose += OnRequestClose;
+            DataContext = vm;
         }
 
-        private void Save_Click(object sender, RoutedEventArgs e) {
-            Result = DialogResultOption.Save;
-            DialogResult = true;
-        }
+        private void OnRequestClose(UnsavedChangesDialogViewModel.Outcome outcome) {
+            // Map VM outcome to the window's Result and DialogResult (preserve previous behavior)
+            Result = outcome switch {
+                UnsavedChangesDialogViewModel.Outcome.Save => DialogResultOption.Save,
+                UnsavedChangesDialogViewModel.Outcome.Discard => DialogResultOption.Discard,
+                _ => DialogResultOption.Cancel
+            };
 
-        private void Discard_Click(object sender, RoutedEventArgs e) {
-            Result = DialogResultOption.Discard;
-            DialogResult = true;
+            // In original implementation Save/Discard set DialogResult = true, Cancel left it as "closed" (we set false).
+            // Keep same signaling so existing callers that use ShowDialog() and check HasValue behave identically.
+            switch (outcome) {
+                case UnsavedChangesDialogViewModel.Outcome.Save:
+                case UnsavedChangesDialogViewModel.Outcome.Discard:
+                    DialogResult = true;
+                    break;
+                default:
+                    DialogResult = false;
+                    break;
+            }
         }
     }
-
 }

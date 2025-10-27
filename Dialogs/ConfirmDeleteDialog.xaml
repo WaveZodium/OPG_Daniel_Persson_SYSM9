@@ -1,0 +1,30 @@
+﻿<Window x:Class="CookMaster.Views.ConfirmDeleteDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Confirm Deletion"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        MinWidth="350">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Are you sure you want to delete this recipe?" HorizontalAlignment="Center"
+                   TextWrapping="Wrap"
+                   FontSize="14"
+                   Grid.Row="0"/>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="2">
+            <Button Margin="0,0,0,0" Width="90" IsDefault="True"
+                    Command="{Binding YesCommand}"
+                    Style="{StaticResource ButtonDangerStyle}">Yes</Button>
+            <Button Margin="8,0,0,0" Width="90" IsCancel="True"
+                    Command="{Binding NoCommand}"
+                    Style="{StaticResource ButtonBlueStyle}">No</Button>
+        </StackPanel>
+    </Grid>
+</Window>
