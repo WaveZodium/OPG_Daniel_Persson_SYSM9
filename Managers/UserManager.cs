@@ -18,17 +18,23 @@ public class UserManager {
         return Users.Any(u => string.Equals(u.Username, username.Trim(), StringComparison.OrdinalIgnoreCase));
     }
 
-    public bool CreateUser(string username, string password, UserRole role = UserRole.User, Country country = Country.Sweden) {
+    public bool CreateUser(string username, 
+                           string password, 
+                           UserRole role = UserRole.User, 
+                           Country country = Country.Sweden,
+                           string email = "",
+                           string securityQuestion = "",
+                           string securityAnswer = "") {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password)) return false;
         if (UserExists(username)) return false;
 
         User user;
 
         if (role == UserRole.Admin) {
-            user = new AdminUser(username.Trim(), password, country);
+            user = new AdminUser(username.Trim(), password, country, email, securityQuestion, securityAnswer);
         }
         else {
-            user = new User(username.Trim(), password, role, country);
+            user = new User(username.Trim(), password, role, country, email, securityQuestion, securityAnswer);
         }
         Users.Add(user);
 
@@ -62,22 +68,27 @@ public class UserManager {
     public void SeedDefaults() {
         // admin
         if (!UserExists("admin")) {
-            CreateUser("admin", "password", UserRole.Admin, Country.Sweden);
+            CreateUser("admin", "password", UserRole.Admin, Country.Sweden, "admin@cookmaster.wavezodium.dev", "What is your favorite color?", "Purple");
         }
 
         // normal user
         if (!UserExists("user")) {
-            CreateUser("user", "password", UserRole.User, Country.Sweden);
+            CreateUser("user", "password", UserRole.User, Country.Sweden, "user@cookmaster.wavezodium.dev", "What is your pet's name?", "Zitha");
         }
 
         if (!UserExists("user2")) {
-            CreateUser("user2", "password", UserRole.User, Country.Sweden);
+            CreateUser("user2", "password", UserRole.User, Country.Sweden, "user2@cookmaster.wavezodium.dev", "What is your favorite food?", "Carbonara");
         }
     }
 
-    // placeholder methods left in place for assignment
-    public void Login() { }
-    public void Logout() { }
-    public void Register() { }
-    public void ChangePassword() { }
+    public void Login(string username, string password) => SignIn(username, password);
+    public void Logout() => SignOut();
+    public void Register(string username, string password, UserRole role, Country country, string email, string securityQuestion, string securityAnswer) {
+        CreateUser(username, password, role, country, email, securityQuestion, securityAnswer);
+    }
+    public void ChangePassword(string oldPassword, string newPassword) {
+        if (IsLoggedIn) {
+            CurrentUser?.ChangePassword(oldPassword, newPassword);
+        }
+    }
 }

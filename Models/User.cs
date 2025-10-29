@@ -10,12 +10,18 @@ public class User {
     public string Password { get; set; } = string.Empty; // plaintext for now (will upgrade later)
     public UserRole Role { get; set; } = UserRole.User;
     public Country Country { get; set; } = Country.Sweden;
+    public string Email { get; set; } = string.Empty;
+    public string SecurityQuestion { get; set; } = string.Empty;
+    public string SecurityAnswer { get; set; } = string.Empty;
 
-    public User(string username, string password,  UserRole role, Country country) {
+    public User(string username, string password,  UserRole role, Country country, string email, string securityQuestion, string securityAnswer) {
         Username = username;
         SetPassword(password);
         Role = role;
         Country = country;
+        Email = email;
+        SecurityQuestion = securityQuestion;
+        SecurityAnswer = securityAnswer;
     }
 
     public bool ValidateLogin(string username, string password) {
