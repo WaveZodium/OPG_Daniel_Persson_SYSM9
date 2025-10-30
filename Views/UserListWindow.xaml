@@ -1,7 +1,8 @@
 ﻿<Window x:Class="CookMaster.Views.UserListWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="UserListWindow" Height="550" Width="800">
+        Title="UserListWindow" Height="550" Width="800"
+        Style="{StaticResource {x:Type Window}}">
     <Grid Margin="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />

@@ -1,10 +1,12 @@
 ﻿using CookMaster.Managers;
 using CookMaster.Models;
+using CookMaster.Services;
 using CookMaster.ViewModels;
 using CookMaster.Views;
-using CookMaster.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System.Security.Policy;
 using System.Windows;
+using System.Windows.Shapes;
 
 namespace CookMaster;
 
@@ -12,6 +14,39 @@ public partial class App : Application {
     public IServiceProvider Services { get; private set; } = null!;
 
     protected override void OnStartup(StartupEventArgs e) {
+        // Ensure App.xaml resources are loaded
+        InitializeComponent();
+
+        // Fallback: ensure an implicit Window style exists in App resources so WPF will apply it reliably.
+        if (!Resources.Contains(typeof(Window))) {
+            var winStyle = new Style(typeof(Window));
+            var brush = TryFindResource("WindowBackgroundBrush") as System.Windows.Media.Brush
+                        ?? System.Windows.SystemColors.WindowBrush;
+            winStyle.Setters.Add(new Setter(Window.BackgroundProperty, brush));
+            Resources[typeof(Window)] = winStyle;
+        }
+
+        if (Resources.Contains(typeof(System.Windows.Window))) {
+            var s = Resources[typeof(System.Windows.Window)] as System.Windows.Style;
+            System.Diagnostics.Debug.WriteLine($"Window style found. Setters count: {s?.Setters.Count}");
+            foreach (var setter in s?.Setters.OfType<System.Windows.Setter>() ?? Enumerable.Empty<System.Windows.Setter>()) {
+                System.Diagnostics.Debug.WriteLine($" Setter: {setter.Property} = {setter.Value}");
+            }
+        }
+        System.Diagnostics.Debug.WriteLine($"Has WindowBackgroundBrush: {Resources.Contains("WindowBackgroundBrush")}");
+
+        // configure DI / get service provider...
+        var provider = ConfigureServices().BuildServiceProvider();
+
+        // resolve and show main window after resources are initialized
+        var main = provider.GetRequiredService<MainWindow>();
+        main.Show();
+
+        base.OnStartup(e);
+    }
+
+    // stub for your DI setup
+    private IServiceCollection ConfigureServices() {
         var services = new ServiceCollection();
 
         // Register managers as singletons
@@ -54,11 +89,6 @@ public partial class App : Application {
             return new RecipeDetailWindow(vm);
         });
 
-        Services = services.BuildServiceProvider();
-
-        var mainWindow = Services.GetRequiredService<MainWindow>();
-        mainWindow.Show();
-
-        base.OnStartup(e);
+        return services;
     }
 }

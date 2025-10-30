@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CookMaster.Views"
         mc:Ignorable="d"
-        Title="RecipeListWindow" Height="450" Width="800">
+        Title="RecipeListWindow" Height="450" Width="800"
+        Style="{StaticResource {x:Type Window}}">
     <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

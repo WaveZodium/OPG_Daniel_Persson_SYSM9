@@ -7,7 +7,7 @@
         xmlns:behaviors="clr-namespace:CookMaster.Behaviors"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
-        Background="AliceBlue">
+        Style="{StaticResource {x:Type Window}}">
 
     <Grid>
         <StackPanel Width="auto" Height="auto" VerticalAlignment="Center" HorizontalAlignment="Center">

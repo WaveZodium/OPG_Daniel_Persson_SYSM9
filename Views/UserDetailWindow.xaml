@@ -5,9 +5,41 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CookMaster.Views"
         mc:Ignorable="d"
-        Title="UserDetailWindow" Height="450" Width="800">
-    <StackPanel>
-        <Button Content="Save" Command="{Binding PerformSaveCommand}" Width="150" Height="75"/>
-        <Button Content="Close" Command="{Binding PerformCloseCommand}" Width="150" Height="75"/>
-    </StackPanel>
+        Title="UserDetailWindow" Height="450" Width="800"
+        Style="{StaticResource {x:Type Window}}">
+    <Grid Margin="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Right column: buttons -->
+        <StackPanel Grid.Column="1" Margin="4,0,0,0">
+            <Button Content="Save" Width="160" Height="30" Margin="4"
+                    ToolTip="Save changes"
+                    Command="{Binding PerformSaveCommand}"
+                    Style="{StaticResource ButtonSaveStyle}"/>
+            <Button Content="Close" Width="160" Height="30" Margin="4"
+                    ToolTip="Close without saving changes"
+                    Command="{Binding PerformCloseCommand}"
+                    Style="{StaticResource ButtonLightGrayStyle}"/>
+        </StackPanel>
+
+        <!-- Left column: user details -->
+        <StackPanel Grid.Column="0">
+            <Label Content="User Details" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <TextBlock Text="Username" Margin="4"/>
+            <TextBox Margin="4"
+                     Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="Email" Margin="4"/>
+            <TextBox Margin="4"
+                     Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="Role" Margin="4"/>
+            <ComboBox Margin="4"
+                      ItemsSource="{Binding Roles}"
+                      SelectedItem="{Binding Role, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+    </Grid>
 </Window>

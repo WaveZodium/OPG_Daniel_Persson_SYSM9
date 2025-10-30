@@ -29,6 +29,15 @@
     <SolidColorBrush x:Key="SecondaryForeground">#FF000000</SolidColorBrush>
     <SolidColorBrush x:Key="DisabledForeground">#99FFFFFF</SolidColorBrush>
 
+    <!-- Window background brush (AliceBlue) -->
+    <!--<SolidColorBrush x:Key="WindowBackgroundBrush">#FFADD8E6</SolidColorBrush>-->
+    <SolidColorBrush x:Key="WindowBackgroundBrush">AliceBlue</SolidColorBrush>
+
+    <!-- Type-keyed Window style to override theme default -->
+    <Style x:Key="{x:Type Window}" TargetType="Window">
+        <Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}" />
+    </Style>
+
     <!-- Reusable rounded button template (keeps ControlTemplate in one place) -->
     <ControlTemplate x:Key="RoundedButtonTemplate" TargetType="Button">
         <Border x:Name="Border"

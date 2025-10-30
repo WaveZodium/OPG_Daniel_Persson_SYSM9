@@ -11,7 +11,6 @@
                 <ResourceDictionary Source="Resources/SteamingPot.xaml"/>
                 <ResourceDictionary Source="Resources/LogoutIcon.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <!-- other app resources can go here -->
         </ResourceDictionary>
     </Application.Resources>
 </Application>
