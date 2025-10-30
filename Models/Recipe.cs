@@ -7,7 +7,11 @@ public class Recipe {
     public string Instructions { get; set; } = string.Empty;
     public RecipeCategory Category { get; set; } = RecipeCategory.Other;
     public DateTime Date { get; init; } = DateTime.UtcNow;
-    public User CreatedBy { get; init; }
+    public User? CreatedBy { get; init; }
+
+    public Recipe() {
+        
+    }
 
     public Recipe(string title, List<string> ingredients, string instructions, RecipeCategory category, User createdBy) {
         Title = title;

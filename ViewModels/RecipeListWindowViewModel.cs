@@ -101,15 +101,20 @@ public class RecipeListWindowViewModel : ViewModelBase {
     }
 
     private void OpenAddRecipeWindow() {
-        // Use a scope and open AddRecipeWindow as a modal dialog; dispose immediately after
+        // Open AddRecipeWindow as a modal dialog using a DI scope
+        var owner = Application.Current?.Windows.OfType<RecipeListWindow>().FirstOrDefault();
+
         using var scope = _services.CreateScope();
         var window = scope.ServiceProvider.GetRequiredService<AddRecipeWindow>();
 
-        // ShowDialog blocks until closed; scope is disposed when leaving using block
-        window.ShowDialog();
+        if (owner != null) window.Owner = owner;
 
-        // Refresh the recipe list after adding a new recipe
-        Recipes = new ObservableCollection<Recipe>(_recipeManager.GetAllRecipes());
+        // ShowDialog blocks; refresh when the dialog returns true (saved)
+        var dialogResult = window.ShowDialog();
+
+        if (dialogResult == true) {
+            Recipes = new ObservableCollection<Recipe>(_recipeManager.GetAllRecipes());
+        }
     }
 
     private void OpenRecipeDetailWindow() {
