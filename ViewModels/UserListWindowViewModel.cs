@@ -1,7 +1,11 @@
 ﻿using CookMaster.Managers;
+using CookMaster.Models;
 using CookMaster.MVVM;
+using CookMaster.Services;
+using CookMaster.Views;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.ObjectModel;
 using System.Windows;
 
 namespace CookMaster.ViewModels;
@@ -9,23 +13,52 @@ namespace CookMaster.ViewModels;
 public class UserListWindowViewModel : ViewModelBase {
     private readonly UserManager _userManager;
     private readonly IServiceProvider _services;
+    private readonly IDialogService _dialogService;
 
     // Close event for the view (nullable: true = success, false = explicit failure, null = just close (like X) )
     public event Action<bool?>? RequestClose;
+
+    // Expose an ObservableCollection so the UI receives collection change notifications
+    private ObservableCollection<User> _users = new();
+    public ObservableCollection<User> Users {
+        get => _users;
+        private set => Set(ref _users, value);
+    }
 
     public RelayCommand PerformAddUserCommand { get; }
     public RelayCommand PerformViewUserCommand { get; }
     public RelayCommand PerformDeleteUserCommand { get; }
     public RelayCommand PerformCloseCommand { get; }
 
-    public UserListWindowViewModel(UserManager userManager, IServiceProvider services) {
+    private User? _selectedUser;
+    public User? SelectedUser {
+        get => _selectedUser;
+        set {
+            if (Set(ref _selectedUser, value)) {
+                // Notify that the command's ability to execute may have changed
+                PerformViewUserCommand?.RaiseCanExecuteChanged();
+                PerformDeleteUserCommand?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public UserListWindowViewModel(UserManager userManager, IServiceProvider services, IDialogService dialogService) {
         _userManager = userManager;
         _services = services;
+        _dialogService = dialogService;
+
+        // Initialize ObservableCollection from manager
+        RefreshUsers();
 
         PerformAddUserCommand = new RelayCommand(_ => PerformAddUser());
-        PerformViewUserCommand = new RelayCommand(_ => PerformViewUser());
-        PerformDeleteUserCommand = new RelayCommand(_ => PerformDeleteUser());
+        PerformViewUserCommand = new RelayCommand(_ => PerformViewUser(), _ => SelectedUser != null);
+        PerformDeleteUserCommand = new RelayCommand(_ => PerformDeleteUser(), _ => SelectedUser != null);
         PerformCloseCommand = new RelayCommand(_ => CloseWindow());
+    }
+
+    private void RefreshUsers() {
+        Users = new ObservableCollection<User>(_userManager.GetAllUsers());
+        Users.Remove(_userManager.GetLoggedIn()!);
     }
 
     public void CloseWindow() {
@@ -38,6 +71,7 @@ public class UserListWindowViewModel : ViewModelBase {
     }
 
     private void PerformViewUser() {
+        if (SelectedUser == null) return;
         // open user detail window
         using var scope = _services.CreateScope();
         var window = scope.ServiceProvider.GetRequiredService<Views.UserDetailWindow>();
@@ -45,14 +79,37 @@ public class UserListWindowViewModel : ViewModelBase {
     }
 
     private void PerformDeleteUser() {
-        var result = MessageBox.Show("Are you sure you want to delete the selected user?",
-                    "Delete User",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
+        if (SelectedUser == null) return;
 
-        //handle messagebox answer
-        if (result == MessageBoxResult.Yes) {
-            MessageBox.Show("User deleted.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        // TODO: Add checks if the selected user has any recipes. If so, prevent deletion and show error.
+        using var scope = _services.CreateScope();
+        var recipeManager = scope.ServiceProvider.GetRequiredService<RecipeManager>();
+        var userRecipes = recipeManager.GetByOwner(SelectedUser);
+        if (userRecipes.Count() > 0) {
+            MessageBox.Show("Cannot delete user who has recipes. Please delete their recipes first.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
+        // Use dialog service instead of MessageBox
+        var owner = Application.Current?.Windows.OfType<UserListWindow>().FirstOrDefault() ?? Application.Current?.MainWindow;
+        var confirm = _dialogService.ShowDeleteConfirmationDialog(owner);
+
+        // If dialog wasn't shown or closed unexpectedly, do nothing
+        if (!confirm.HasValue) return;
+
+        if (confirm.Value) {
+            var username = SelectedUser.Username;
+            var deleted = _userManager.DeleteUser(username);
+            if (deleted) {
+                // Remove from ObservableCollection so UI updates immediately
+                Users.Remove(SelectedUser);
+                SelectedUser = null;
+
+                MessageBox.Show("User deleted.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else {
+                MessageBox.Show("Failed to delete user.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

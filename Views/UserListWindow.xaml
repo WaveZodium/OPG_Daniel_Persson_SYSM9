@@ -1,15 +1,43 @@
 ﻿<Window x:Class="CookMaster.Views.UserListWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:CookMaster.Views"
-        mc:Ignorable="d"
-        Title="UserListWindow" Height="450" Width="800">
-    <StackPanel>
-        <Button Content="Add User" Command="{Binding PerformAddUserCommand}" Width="150" Height="75"/>
-        <Button Content="View User" Command="{Binding PerformViewUserCommand}" Width="150" Height="75"/>
-        <Button Content="Delete User" Command="{Binding PerformDeleteUserCommand}" Width="150" Height="75"/>
-        <Button Content="Close" Command="{Binding PerformCloseCommand}" Width="150" Height="75"/>
-    </StackPanel>
+        Title="UserListWindow" Height="550" Width="800">
+    <Grid Margin="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Right column: buttons -->
+        <StackPanel Grid.Column="1" Margin="4,0,0,0">
+            <Button Content="Add User" Width="160" Height="30" Margin="4" 
+                    ToolTip="Add a new user"
+                    Command="{Binding PerformAddUserCommand}"/>
+            <Button Content="View User" Width="160" Height="30" Margin="4" 
+                    ToolTip="View selected user"
+                    Command="{Binding PerformViewUserCommand}"/>
+            <Button Content="Delete User" Width="160" Height="30" Margin="4" 
+                    ToolTip="Delete selected user"
+                    Command="{Binding PerformDeleteUserCommand}"
+                    Style="{StaticResource ButtonDangerStyle}"/>
+            <Button Content="Close" Width="160" Height="30" Margin="4" 
+                    ToolTip="Close the window"
+                    Command="{Binding PerformCloseCommand}"
+                    Style="{StaticResource ButtonSaveStyle}"/>
+        </StackPanel>
+
+        <!-- Left column: user list -->
+        <StackPanel Grid.Column="0">
+            <Label Content="User List" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <DataGrid Grid.Row="2" Grid.Column="0" ItemsSource="{Binding Users}" 
+                      SelectedItem="{Binding SelectedUser}" 
+                      AutoGenerateColumns="False" 
+                      Height="auto" Margin="0,0,0,0"
+                      IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="User" Binding="{Binding Username}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </Grid>
 </Window>

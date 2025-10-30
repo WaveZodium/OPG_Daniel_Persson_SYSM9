@@ -13,6 +13,8 @@ public class UserManager {
         SeedDefaults();
     }
 
+    public List<User> GetAllUsers() => Users;
+
     public bool UserExists(string username) {
         if (string.IsNullOrWhiteSpace(username)) return false;
         return Users.Any(u => string.Equals(u.Username, username.Trim(), StringComparison.OrdinalIgnoreCase));
@@ -38,6 +40,17 @@ public class UserManager {
         }
         Users.Add(user);
 
+        return true;
+    }
+
+    public bool DeleteUser(string username) {
+        var user = FindUser(username);
+        if (user == null) return false;
+        Users.Remove(user);
+        // If the deleted user was logged in, log them out
+        if (_loggedInUser == user) {
+            SignOut();
+        }
         return true;
     }
 
