@@ -28,7 +28,7 @@
 
         <!-- Left column: user details -->
         <StackPanel Grid.Column="0">
-            <Label Content="User Details" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <Label Content="User Details for {Binding User.Username}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             <TextBlock Text="Username" Margin="4"/>
             <TextBox Margin="4"
                      Text="{Binding User.Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
@@ -37,10 +37,18 @@
             <TextBox Margin="4"
                      Text="{Binding User.Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-            <TextBlock Text="Role" Margin="4"/>
+            <TextBlock Text="Country" Margin="4"/>
             <ComboBox Margin="4"
                       ItemsSource="{Binding Countries}"
                       SelectedItem="{Binding User.Country, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="Security Question" Margin="4"/>
+            <TextBox Margin="4"
+                     Text="{Binding User.SecurityQuestion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="Security Answer" Margin="4"/>
+            <TextBox Margin="4"
+                     Text="{Binding User.SecurityAnswer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Text="Role" Margin="4"/>
             <ComboBox Margin="4"

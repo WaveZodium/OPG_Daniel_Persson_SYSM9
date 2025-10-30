@@ -15,17 +15,19 @@
             <Image Source="{StaticResource SteamingPotImage}"
                    Width="80" Height="80" Stretch="Uniform"
                    Margin="0,0,0,0" HorizontalAlignment="Center"/>
-            <TextBlock Text="CookMaster" FontSize="24" FontWeight="Bold" 
+            <TextBlock Text="CookMaster" FontSize="42" FontWeight="Bold" 
                        HorizontalAlignment="Center" Margin="0,0,0,30"/>
 
             <TextBlock Text="Username:" Margin="3" FontSize="14" FontWeight="DemiBold"/>
             <TextBox Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                      Margin="3, 0, 3, 3" Padding="3"
+                     Style="{StaticResource RoundedTextBoxStyle}"
                      behaviors:FocusBehavior.IsFocused="{Binding FocusUsername, Mode=TwoWay}"
                      behaviors:EnterKeyBehavior.EnterKeyCommand="{Binding TryLoginCommand}" />
 
             <TextBlock Text="Password:" Margin="3" FontSize="14" FontWeight="DemiBold"/>
             <PasswordBox Margin="3, 0, 3, 3" Padding="3"
+                         Style="{StaticResource RoundedPasswordBoxStyle}"
                          behaviors:PasswordBoxAssistant.BindPassword="True"
                          behaviors:PasswordBoxAssistant.BoundPassword="{Binding Password, Mode=TwoWay}"
                          behaviors:EnterKeyBehavior.EnterKeyCommand="{Binding TryLoginCommand}" />
@@ -34,13 +36,13 @@
                 <Hyperlink Command="{Binding ForgotPasswordCommand}">Forgot password?</Hyperlink>
             </TextBlock>
 
-            <StackPanel Orientation="Horizontal" Margin="0 21 0 0">
+            <StackPanel Orientation="Horizontal" Margin="0 21 0 0" HorizontalAlignment="Center">
                 <Button Content="Login" Command="{Binding TryLoginCommand}" 
-                        Width="100" Height="30" Margin="3"
+                        Width="100" Height="30" Margin="6"
                         Style="{StaticResource ButtonLightGrayStyle}"
                         />
                 <Button Content="Register" Command="{Binding OpenRegisterWindowCommand}" 
-                        Width="100" Height="30" Margin="3"
+                        Width="100" Height="30" Margin="6"
                         Style="{StaticResource ButtonBlueStyle}"/>
             </StackPanel>
         </StackPanel>

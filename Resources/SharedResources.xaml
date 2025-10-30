@@ -38,16 +38,60 @@
         <Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}" />
     </Style>
 
+    <!-- Reusable rounded textbox template (keeps ControlTemplate in one place) -->
+    <ControlTemplate x:Key="RoundedTextBoxTemplate" TargetType="TextBox">
+        <Border x:Name="Border"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="2"
+                Padding="{TemplateBinding Padding}">
+            <ScrollViewer x:Name="PART_ContentHost"/>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Border" Property="Opacity" Value="0.6"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!-- Rounded TextBox style -->
+    <Style x:Key="RoundedTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Template" Value="{StaticResource RoundedTextBoxTemplate}" />
+    </Style>
+
+    <!-- Reusable rounded passwordbox template (keeps ControlTemplate in one place) -->
+    <ControlTemplate x:Key="RoundedPasswordBoxTemplate" TargetType="PasswordBox">
+        <Border x:Name="Border"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="2"
+                Padding="{TemplateBinding Padding}">
+            <ScrollViewer x:Name="PART_ContentHost"/>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Border" Property="Opacity" Value="0.6"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!-- Rounded PasswordBox style -->
+    <Style x:Key="RoundedPasswordBoxStyle" TargetType="PasswordBox">
+        <Setter Property="Template" Value="{StaticResource RoundedPasswordBoxTemplate}" />
+    </Style>
+
     <!-- Reusable rounded button template (keeps ControlTemplate in one place) -->
     <ControlTemplate x:Key="RoundedButtonTemplate" TargetType="Button">
         <Border x:Name="Border"
-            Background="{TemplateBinding Background}"
-            BorderBrush="{TemplateBinding BorderBrush}"
-            BorderThickness="{TemplateBinding BorderThickness}"
-            CornerRadius="2"
-            Padding="{TemplateBinding Padding}">
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="2"
+                Padding="{TemplateBinding Padding}">
             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                        RecognizesAccessKey="True" />
+                    RecognizesAccessKey="True" />
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsEnabled" Value="False">
