@@ -21,12 +21,14 @@
             <TextBlock Text="Username:" Margin="3" FontSize="14" FontWeight="DemiBold"/>
             <TextBox Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                      Margin="3, 0, 3, 3" Padding="3"
-                     behaviors:FocusBehavior.IsFocused="{Binding FocusUsername, Mode=TwoWay}"/>
+                     behaviors:FocusBehavior.IsFocused="{Binding FocusUsername, Mode=TwoWay}"
+                     behaviors:EnterKeyBehavior.EnterKeyCommand="{Binding TryLoginCommand}" />
 
             <TextBlock Text="Password:" Margin="3" FontSize="14" FontWeight="DemiBold"/>
             <PasswordBox Margin="3, 0, 3, 3" Padding="3"
                          behaviors:PasswordBoxAssistant.BindPassword="True"
-                         behaviors:PasswordBoxAssistant.BoundPassword="{Binding Password, Mode=TwoWay}"/>
+                         behaviors:PasswordBoxAssistant.BoundPassword="{Binding Password, Mode=TwoWay}"
+                         behaviors:EnterKeyBehavior.EnterKeyCommand="{Binding TryLoginCommand}" />
 
             <TextBlock FontSize="12" HorizontalAlignment="Center" TextAlignment="Center" Margin="3">
                 <Hyperlink Command="{Binding ForgotPasswordCommand}">Forgot password?</Hyperlink>
