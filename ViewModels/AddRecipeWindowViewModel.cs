@@ -137,7 +137,7 @@ public class AddRecipeWindowViewModel : ViewModelBase {
         RemoveIngredientCommand = new RelayCommand(_ => RemoveIngredient(), _ => SelectedIngredient != null);
 
         // Initialize a new empty recipe
-        Recipe = new Recipe(string.Empty, new List<string>(), string.Empty, RecipeCategory.Unknown, userManager.CurrentUser);
+        Recipe = new Recipe(string.Empty, new List<string>(), string.Empty, RecipeCategory.Unknown, DateTime.Now, DateTime.Now, userManager.CurrentUser);
     }
 
     private void AddIngredient() {
@@ -169,7 +169,7 @@ public class AddRecipeWindowViewModel : ViewModelBase {
         // convert ingredients collection back to List<string> for the model
         var ingredients = Ingredients?.ToList() ?? new List<string>();
 
-        Recipe!.EditRecipe(Title, ingredients, Instructions, Category);
+        Recipe!.EditRecipe(Title, ingredients, Instructions, Category, _userManager.CurrentUser);
 
         _recipeManager.AddRecipe(Recipe);
 

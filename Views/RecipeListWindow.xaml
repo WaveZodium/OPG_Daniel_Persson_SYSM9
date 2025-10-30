@@ -55,7 +55,7 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Recipe Name" Binding="{Binding Title}" Width="*"/>
                 <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="*"/>
-                <DataGridTextColumn Header="Created By" Binding="{Binding CreatedBy.Username}" Width="*"/>
+                <DataGridTextColumn Header="Owner" Binding="{Binding Owner.Username}" Width="*"/>
             </DataGrid.Columns>
         </DataGrid>
 

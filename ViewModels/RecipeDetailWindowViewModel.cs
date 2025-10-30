@@ -26,6 +26,9 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
             OnPropertyChanged(nameof(Instructions));
             OnPropertyChanged(nameof(Ingredients));
             OnPropertyChanged(nameof(Category));
+            // keep Owner selection in sync with the recipe copy
+            _owner = _recipe?.Owner;
+            OnPropertyChanged(nameof(Owner));
             // update dependent availability flags when recipe changes
             UpdateOwnerOrAdmin();
             PerformSaveCommand?.RaiseCanExecuteChanged();
@@ -126,6 +129,25 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         }
     }
 
+    // All users from UserManager
+    public IEnumerable<User> Users => _userManager.Users;
+
+    // Backing field for owner selection in the editable copy
+    private User? _owner;
+    public User? Owner {
+        get => _owner ?? Recipe?.Owner;
+        set {
+            if (_owner == value) return;
+            _owner = value;
+            OnPropertyChanged();
+            // mark dirty so Save becomes available (admins can change owner selection in the UI)
+            IsDirty = true;
+        }
+    }
+
+    // Visible only when current user is admin (used by the Owner label/combobox)
+    public bool IsAdmin => _userManager.IsAdmin;
+
     public RelayCommand PerformSaveCommand { get; }
     public RelayCommand PerformDeleteCommand { get; }
     public RelayCommand PerformCloseCommand { get; }
@@ -166,7 +188,7 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
             return;
         }
 
-        IsOwnerOrAdmin = _userManager.IsAdmin || current.Id == Recipe.CreatedBy.Id;
+        IsOwnerOrAdmin = _userManager.IsAdmin || current.Id == Recipe.Owner.Id;
     }
 
     private void AddIngredient() {
@@ -196,9 +218,13 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
             Recipe.Ingredients = Ingredients.ToList();
             Recipe.Instructions = Instructions;
             Recipe.Category = Category;
+            Recipe.Owner = Owner;
 
-            // Edit existing recipe
-            _sourceRecipe.EditRecipe(Recipe.Title, Recipe.Ingredients, Recipe.Instructions, Recipe.Category);
+            // Note: Owner (Owner) on Recipe model is init-only. This viewlet allows selecting an owner
+            // in the UI (for admins) but the existing Recipe.EditRecipe method doesn't update Owner.
+            // Persisting a change to the owner would require changing the model or manager API.
+            // For now we keep the existing EditRecipe flow.
+            _sourceRecipe.EditRecipe(Recipe.Title, Recipe.Ingredients, Recipe.Instructions, Recipe.Category, Recipe.Owner);
             IsDirty = false;
             RequestClose?.Invoke(true);
         }

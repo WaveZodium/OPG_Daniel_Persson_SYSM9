@@ -1,7 +1,7 @@
 ﻿<Window x:Class="CookMaster.Views.RecipeDetailWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="RecipeDetailWindow" Height="500" Width="800">
+        Title="RecipeDetailWindow" Height="550" Width="800">
     <Grid Margin="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -60,6 +60,14 @@
             <ComboBox Margin="4"
                       ItemsSource="{Binding Categories}"
                       SelectedItem="{Binding Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <!-- Owner (visible only to admin) -->
+            <TextBlock Text="Owner" Margin="4" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
+            <ComboBox Margin="4"
+                      ItemsSource="{Binding Users}"
+                      SelectedItem="{Binding Owner, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      DisplayMemberPath="Username"
+                      Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
         </StackPanel>
     </Grid>
 </Window>

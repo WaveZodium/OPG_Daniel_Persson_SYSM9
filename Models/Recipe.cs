@@ -6,30 +6,39 @@ public class Recipe {
     public List<string> Ingredients { get; set; } = new List<string>();
     public string Instructions { get; set; } = string.Empty;
     public RecipeCategory Category { get; set; } = RecipeCategory.Other;
-    public DateTime Date { get; init; } = DateTime.UtcNow;
-    public User? CreatedBy { get; init; }
+    public DateTime Created { get; init; } = DateTime.UtcNow;
+    public DateTime Updated { get; set; } = DateTime.UtcNow;
+    public User? Owner { get; set; }
 
     public Recipe() {
         
     }
 
-    public Recipe(string title, List<string> ingredients, string instructions, RecipeCategory category, User createdBy) {
+    public Recipe(string title, List<string> ingredients, string instructions, RecipeCategory category, DateTime created, DateTime updated, User owner) {
         Title = title;
         Ingredients = ingredients;
         Instructions = instructions;
         Category = category;
-        CreatedBy = createdBy;
+        Created = created;
+        Updated = updated;
+        Owner = owner;
     }
 
-    public void EditRecipe(string title, List<string> ingredients, string instructions, RecipeCategory category) {
+    public void EditRecipe(string title, List<string> ingredients, string instructions, RecipeCategory category, User owner) {
         Title = title;
         Ingredients = ingredients;
         Instructions = instructions;
         Category = category;
+        Owner = owner;
+        Updated = DateTime.UtcNow;
+    }
+
+    public void UpdateOwner(User newOwner) {
+        Owner = newOwner;
     }
 
     public Recipe CopyRecipe() {
-        return new Recipe(Title, new List<string>(Ingredients), Instructions, Category, CreatedBy);
+        return new Recipe(Title, new List<string>(Ingredients), Instructions, Category, Created, Updated, Owner!);
     }
 
 }
