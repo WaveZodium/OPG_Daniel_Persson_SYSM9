@@ -7,7 +7,8 @@
         mc:Ignorable="d"
         Title="Unsaved Changes" 
         SizeToContent="WidthAndHeight"
-        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
         Style="{StaticResource {x:Type Window}}">
     <StackPanel Margin="20">
         <TextBlock Text="You have unsaved changes. What would you like to do?" Margin="0,0,0,10"/>

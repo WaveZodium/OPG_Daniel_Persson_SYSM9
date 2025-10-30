@@ -72,9 +72,21 @@ public class UserListWindowViewModel : ViewModelBase {
 
     private void PerformViewUser() {
         if (SelectedUser == null) return;
-        // open user detail window
+        // open user detail window and pass the selected user to its VM
         using var scope = _services.CreateScope();
         var window = scope.ServiceProvider.GetRequiredService<Views.UserDetailWindow>();
+
+        // Prefer the window's DataContext if it already is the expected VM instance,
+        // otherwise resolve a VM from the scope and assign it as the DataContext.
+        var vm = window.DataContext as UserDetailWindowViewModel
+                 ?? scope.ServiceProvider.GetRequiredService<UserDetailWindowViewModel>();
+
+        // Provide the selected user to the detail VM
+        vm.LoadUser(SelectedUser);
+
+        // Ensure window is using the VM instance we just prepared
+        window.DataContext = vm;
+
         window.ShowDialog();
     }
 

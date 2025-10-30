@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:CookMaster.Views"
         mc:Ignorable="d"
         Title="UserDetailWindow" Height="450" Width="800"
+        WindowStartupLocation="CenterOwner"
         Style="{StaticResource {x:Type Window}}">
     <Grid Margin="8">
         <Grid.ColumnDefinitions>
@@ -30,16 +31,21 @@
             <Label Content="User Details" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             <TextBlock Text="Username" Margin="4"/>
             <TextBox Margin="4"
-                     Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                     Text="{Binding User.Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Text="Email" Margin="4"/>
             <TextBox Margin="4"
-                     Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                     Text="{Binding User.Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="Role" Margin="4"/>
+            <ComboBox Margin="4"
+                      ItemsSource="{Binding Countries}"
+                      SelectedItem="{Binding User.Country, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Text="Role" Margin="4"/>
             <ComboBox Margin="4"
                       ItemsSource="{Binding Roles}"
-                      SelectedItem="{Binding Role, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                      SelectedItem="{Binding User.Role, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
         </StackPanel>
     </Grid>
 </Window>
