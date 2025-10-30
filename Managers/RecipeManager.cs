@@ -34,6 +34,11 @@ public class RecipeManager {
 
     public IEnumerable<Recipe> GetAllRecipes() => Recipes.ToList();
 
+    public IEnumerable<Recipe> GetByOwner(User owner) {
+        if (owner == null) return Enumerable.Empty<Recipe>();
+        return Recipes.Where(r => r.Owner != null && r.Owner.Id == owner.Id).ToList();
+    }
+
     public IEnumerable<Recipe> GetByUser(User user) {
         if (user == null) return Enumerable.Empty<Recipe>();
         return Recipes.Where(r => r.Owner != null && r.Owner.Id == user.Id).ToList();

@@ -62,14 +62,14 @@ public class RecipeListWindowViewModel : ViewModelBase {
         _userManager = userManager;
         _services = services;
 
-        // populate the observable collection from the manager
-        Recipes = new ObservableCollection<Recipe>(_recipeManager.GetAllRecipes());
-
         // initialize logged-in user display from UserManager
         var logged = _userManager.GetLoggedIn();
         LoggedInUserName = logged != null ? logged.Username : "(not signed in)";
         IsLoggedIn = _userManager.IsLoggedIn;
         IsAdmin = _userManager.IsAdmin;
+
+        if (IsAdmin) { Recipes = new ObservableCollection<Recipe>(_recipeManager.GetAllRecipes()); }
+        else { Recipes = new ObservableCollection<Recipe>(_recipeManager.GetByOwner(_userManager.CurrentUser)); }
 
         OpenMainWindowCommand = new RelayCommand(_ => OpenMainWindow());
         OpenAddRecipeWindowCommand = new RelayCommand(_ => OpenAddRecipeWindow());
@@ -113,7 +113,8 @@ public class RecipeListWindowViewModel : ViewModelBase {
         var dialogResult = window.ShowDialog();
 
         if (dialogResult == true) {
-            Recipes = new ObservableCollection<Recipe>(_recipeManager.GetAllRecipes());
+            if (IsAdmin) { Recipes = new ObservableCollection<Recipe>(_recipeManager.GetAllRecipes()); }
+            else { Recipes = new ObservableCollection<Recipe>(_recipeManager.GetByOwner(_userManager.CurrentUser)); }
         }
     }
 
@@ -138,7 +139,8 @@ public class RecipeListWindowViewModel : ViewModelBase {
 
         // Refresh list only when dialog indicated success (true)
         if (dialogResult == true) {
-            Recipes = new ObservableCollection<Recipe>(_recipeManager.GetAllRecipes());
+            if (IsAdmin) { Recipes = new ObservableCollection<Recipe>(_recipeManager.GetAllRecipes()); }
+            else { Recipes = new ObservableCollection<Recipe>(_recipeManager.GetByOwner(_userManager.CurrentUser)); }
         }
     }
 
