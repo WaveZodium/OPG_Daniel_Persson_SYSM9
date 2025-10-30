@@ -3,6 +3,7 @@ using CookMaster.Models;
 using CookMaster.MVVM;
 using CookMaster.Services;
 using CookMaster.Views;
+using System.Collections.ObjectModel;
 using System.Windows;
 
 namespace CookMaster.ViewModels;
@@ -88,14 +89,29 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         }
     }
 
-    public List<string> Ingredients {
-        get => Recipe?.Ingredients ?? new List<string>();
+    private ObservableCollection<string> _ingredients = new();
+    public ObservableCollection<string> Ingredients {
+        get => _ingredients;
+        private set => Set(ref _ingredients, value);
+    }
+
+    private string? _selectedIngredient;
+    public string? SelectedIngredient {
+        get => _selectedIngredient;
         set {
-            if (Recipe == null) return;
-            if (Recipe.Ingredients == value) return;
-            Recipe.Ingredients = value;
-            OnPropertyChanged();
-            IsDirty = true;
+            if (Set(ref _selectedIngredient, value)) {
+                RemoveIngredientCommand?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    private string _newIngredientText = string.Empty;
+    public string NewIngredientText {
+        get => _newIngredientText;
+        set {
+            if (Set(ref _newIngredientText, value)) {
+                AddIngredientCommand?.RaiseCanExecuteChanged();
+            }
         }
     }
 
@@ -114,6 +130,9 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
     public RelayCommand PerformDeleteCommand { get; }
     public RelayCommand PerformCloseCommand { get; }
 
+    public RelayCommand AddIngredientCommand { get; }
+    public RelayCommand RemoveIngredientCommand { get; }
+
     public RecipeDetailWindowViewModel(
         RecipeManager recipeManager,
         UserManager userManager,
@@ -125,6 +144,8 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         _sourceRecipe = sourceRecipe;
 
         Recipe = sourceRecipe?.CopyRecipe();
+        Ingredients = new ObservableCollection<string>(Recipe!.Ingredients);
+
         UpdateOwnerOrAdmin();
 
         // Save allowed only when there are unsaved changes AND user is owner or admin
@@ -133,6 +154,9 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         PerformCloseCommand = new RelayCommand(_ => PerformClose());
         // CanExecute for delete depends on owner/admin
         PerformDeleteCommand = new RelayCommand(_ => PerformDelete(), _ => IsOwnerOrAdmin);
+
+        AddIngredientCommand = new RelayCommand(_ => AddIngredient(), _ => !string.IsNullOrWhiteSpace(NewIngredientText));
+        RemoveIngredientCommand = new RelayCommand(_ => RemoveIngredient(), _ => SelectedIngredient != null);
     }
 
     private void UpdateOwnerOrAdmin() {
@@ -145,9 +169,34 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         IsOwnerOrAdmin = _userManager.IsAdmin || current.Id == Recipe.CreatedBy.Id;
     }
 
+    private void AddIngredient() {
+        var text = NewIngredientText?.Trim();
+        if (string.IsNullOrEmpty(text) || Ingredients == null) return;
+
+        Ingredients.Add(text);
+        NewIngredientText = string.Empty;
+        IsDirty = true;
+        AddIngredientCommand.RaiseCanExecuteChanged();
+        RemoveIngredientCommand.RaiseCanExecuteChanged();
+    }
+
+    private void RemoveIngredient() {
+        if (SelectedIngredient == null || Ingredients == null) return;
+        Ingredients.Remove(SelectedIngredient);
+        SelectedIngredient = null;
+        IsDirty = true;
+        RemoveIngredientCommand.RaiseCanExecuteChanged();
+        AddIngredientCommand.RaiseCanExecuteChanged();
+    }
+
     private void PerformSave() {
         if (Recipe == null) return;
         if (_sourceRecipe != null) {
+            Recipe.Title = Title;
+            Recipe.Ingredients = Ingredients.ToList();
+            Recipe.Instructions = Instructions;
+            Recipe.Category = Category;
+
             // Edit existing recipe
             _sourceRecipe.EditRecipe(Recipe.Title, Recipe.Ingredients, Recipe.Instructions, Recipe.Category);
             IsDirty = false;

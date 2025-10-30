@@ -1,7 +1,7 @@
 ﻿<Window x:Class="CookMaster.Views.RecipeDetailWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="RecipeDetailWindow" Height="450" Width="800">
+        Title="RecipeDetailWindow" Height="500" Width="800">
     <Grid Margin="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -36,7 +36,18 @@
                      Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Text="Ingredients" Margin="4"/>
-            <ListBox ItemsSource="{Binding Ingredients}" Height="100" Margin="4"/>
+            <ListBox ItemsSource="{Binding Ingredients}" SelectedItem="{Binding SelectedIngredient}" Height="100" Margin="4"/>
+
+            <!-- Add / Remove controls -->
+            <StackPanel Orientation="Horizontal" Margin="4">
+                <TextBox Width="300" Margin="0,0,4,0"
+             Text="{Binding NewIngredientText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button Content="Add" Width="80"
+            Command="{Binding AddIngredientCommand}"
+            Margin="0,0,4,0"/>
+                <Button Content="Remove" Width="80"
+            Command="{Binding RemoveIngredientCommand}"/>
+            </StackPanel>
 
             <TextBlock Text="Instructions" Margin="4"/>
             <TextBox Margin="4" Height="100"

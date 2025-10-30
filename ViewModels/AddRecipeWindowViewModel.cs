@@ -3,6 +3,8 @@ using CookMaster.Models;
 using CookMaster.MVVM;
 using CookMaster.Services;
 using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 
 namespace CookMaster.ViewModels;
@@ -21,6 +23,8 @@ public class AddRecipeWindowViewModel : ViewModelBase {
         get => _recipe;
         private set {
             _recipe = value;
+            // populate Ingredients collection from the recipe
+            Ingredients = new ObservableCollection<string>(Recipe?.Ingredients ?? new List<string>());
             OnPropertyChanged(nameof(Title));
             OnPropertyChanged(nameof(Instructions));
             OnPropertyChanged(nameof(Ingredients));
@@ -28,6 +32,8 @@ public class AddRecipeWindowViewModel : ViewModelBase {
             // update dependent availability flags when recipe changes
             PerformAddCommand?.RaiseCanExecuteChanged();
             PerformCancelCommand?.RaiseCanExecuteChanged();
+            AddIngredientCommand?.RaiseCanExecuteChanged();
+            RemoveIngredientCommand?.RaiseCanExecuteChanged();
         }
     }
 
@@ -74,14 +80,30 @@ public class AddRecipeWindowViewModel : ViewModelBase {
         }
     }
 
-    public List<string> Ingredients {
-        get => Recipe?.Ingredients ?? new List<string>();
+    // Ingredients exposed as ObservableCollection for live updates in the ListBox
+    private ObservableCollection<string> _ingredients = new();
+    public ObservableCollection<string> Ingredients {
+        get => _ingredients;
+        private set => Set(ref _ingredients, value);
+    }
+
+    private string? _selectedIngredient;
+    public string? SelectedIngredient {
+        get => _selectedIngredient;
         set {
-            if (Recipe == null) return;
-            if (Recipe.Ingredients == value) return;
-            Recipe.Ingredients = value;
-            OnPropertyChanged();
-            IsDirty = true;
+            if (Set(ref _selectedIngredient, value)) {
+                RemoveIngredientCommand?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    private string _newIngredientText = string.Empty;
+    public string NewIngredientText {
+        get => _newIngredientText;
+        set {
+            if (Set(ref _newIngredientText, value)) {
+                AddIngredientCommand?.RaiseCanExecuteChanged();
+            }
         }
     }
 
@@ -99,6 +121,9 @@ public class AddRecipeWindowViewModel : ViewModelBase {
     public RelayCommand PerformAddCommand { get; }
     public RelayCommand PerformCancelCommand { get; }
 
+    // New ingredient add/remove commands
+    public RelayCommand AddIngredientCommand { get; }
+    public RelayCommand RemoveIngredientCommand { get; }
 
     public AddRecipeWindowViewModel(RecipeManager recipeManager, UserManager userManager, IDialogService dialogService) {
         _recipeManager = recipeManager;
@@ -108,24 +133,43 @@ public class AddRecipeWindowViewModel : ViewModelBase {
         PerformAddCommand = new RelayCommand(_ => PerformAdd());
         PerformCancelCommand = new RelayCommand(_ => PerformCancel());
 
+        AddIngredientCommand = new RelayCommand(_ => AddIngredient(), _ => !string.IsNullOrWhiteSpace(NewIngredientText));
+        RemoveIngredientCommand = new RelayCommand(_ => RemoveIngredient(), _ => SelectedIngredient != null);
+
         // Initialize a new empty recipe
         Recipe = new Recipe(string.Empty, new List<string>(), string.Empty, RecipeCategory.Unknown, userManager.CurrentUser);
     }
 
+    private void AddIngredient() {
+        var text = NewIngredientText?.Trim();
+        if (string.IsNullOrEmpty(text) || Ingredients == null) return;
+
+        Ingredients.Add(text);
+        NewIngredientText = string.Empty;
+        IsDirty = true;
+        AddIngredientCommand.RaiseCanExecuteChanged();
+        RemoveIngredientCommand.RaiseCanExecuteChanged();
+    }
+
+    private void RemoveIngredient() {
+        if (SelectedIngredient == null || Ingredients == null) return;
+        Ingredients.Remove(SelectedIngredient);
+        SelectedIngredient = null;
+        IsDirty = true;
+        RemoveIngredientCommand.RaiseCanExecuteChanged();
+        AddIngredientCommand.RaiseCanExecuteChanged();
+    }
+
     private void PerformAdd() {
-        if (_recipe == null || string.IsNullOrWhiteSpace(Title) /*|| Ingredients.Count == 0*/ || string.IsNullOrWhiteSpace(Instructions)) {
+        if (_recipe == null || string.IsNullOrWhiteSpace(Title) || string.IsNullOrWhiteSpace(Instructions)) {
             MessageBox.Show("Cannot add recipe: recipe data is missing.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }
 
-        List<string> ingredients = new List<string> {
-            "1 cup flour",
-            "2 eggs",
-            "1/2 cup sugar"
-        };
-        Ingredients = ingredients;
+        // convert ingredients collection back to List<string> for the model
+        var ingredients = Ingredients?.ToList() ?? new List<string>();
 
-        Recipe!.EditRecipe(Title, Ingredients, Instructions, Category);
+        Recipe!.EditRecipe(Title, ingredients, Instructions, Category);
 
         _recipeManager.AddRecipe(Recipe);
 
