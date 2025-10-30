@@ -24,6 +24,14 @@ public class Recipe {
         Owner = owner;
     }
 
+    public void EditRecipe(string title, List<string> ingredients, string instructions, RecipeCategory category) {
+        Title = title;
+        Ingredients = ingredients;
+        Instructions = instructions;
+        Category = category;
+        Updated = DateTime.UtcNow;
+    }
+
     public void EditRecipe(string title, List<string> ingredients, string instructions, RecipeCategory category, User owner) {
         Title = title;
         Ingredients = ingredients;

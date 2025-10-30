@@ -14,9 +14,6 @@ public class AddRecipeWindowViewModel : ViewModelBase {
     private readonly UserManager _userManager;
     private readonly IDialogService _dialogService;
 
-    // the original source recipe (not edited directly)
-    private readonly Recipe? _sourceRecipe;
-
     // editable copy exposed to the view
     private Recipe? _recipe;
     public Recipe? Recipe {
@@ -137,7 +134,13 @@ public class AddRecipeWindowViewModel : ViewModelBase {
         RemoveIngredientCommand = new RelayCommand(_ => RemoveIngredient(), _ => SelectedIngredient != null);
 
         // Initialize a new empty recipe
-        Recipe = new Recipe(string.Empty, new List<string>(), string.Empty, RecipeCategory.Unknown, DateTime.Now, DateTime.Now, userManager.CurrentUser);
+        var owner = userManager.CurrentUser;
+        if (owner == null) {
+            MessageBox.Show("No user is currently logged in. Cannot create a recipe without an owner.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            PerformCancel();
+            return;
+        }
+        Recipe = new Recipe(string.Empty, new List<string>(), string.Empty, RecipeCategory.Unknown, DateTime.Now, DateTime.Now, owner);
     }
 
     private void AddIngredient() {
@@ -169,7 +172,13 @@ public class AddRecipeWindowViewModel : ViewModelBase {
         // convert ingredients collection back to List<string> for the model
         var ingredients = Ingredients?.ToList() ?? new List<string>();
 
-        Recipe!.EditRecipe(Title, ingredients, Instructions, Category, _userManager.CurrentUser);
+        var owner = _userManager.CurrentUser;
+        if (owner == null) {
+            MessageBox.Show("No user is currently logged in. Cannot create a recipe without an owner.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            PerformCancel();
+            return;
+        }
+        Recipe!.EditRecipe(Title, ingredients, Instructions, Category, owner);
 
         _recipeManager.AddRecipe(Recipe);
 

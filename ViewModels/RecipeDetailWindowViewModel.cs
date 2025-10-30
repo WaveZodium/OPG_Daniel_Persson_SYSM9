@@ -27,7 +27,6 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
             OnPropertyChanged(nameof(Ingredients));
             OnPropertyChanged(nameof(Category));
             // keep Owner selection in sync with the recipe copy
-            _owner = _recipe?.Owner;
             OnPropertyChanged(nameof(Owner));
             // update dependent availability flags when recipe changes
             UpdateOwnerOrAdmin();
@@ -133,9 +132,9 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
     public IEnumerable<User> Users => _userManager.Users;
 
     // Backing field for owner selection in the editable copy
-    private User? _owner;
-    public User? Owner {
-        get => _owner ?? Recipe?.Owner;
+    private User _owner;
+    public User Owner {
+        get => _owner;
         set {
             if (_owner == value) return;
             _owner = value;
@@ -159,14 +158,15 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         RecipeManager recipeManager,
         UserManager userManager,
         IDialogService dialogService,
-        Recipe? sourceRecipe) {
+        Recipe sourceRecipe) {
         _recipeManager = recipeManager;
         _userManager = userManager;
         _dialogService = dialogService;
         _sourceRecipe = sourceRecipe;
+        _owner = sourceRecipe.Owner!;
 
-        Recipe = sourceRecipe?.CopyRecipe();
-        Ingredients = new ObservableCollection<string>(Recipe!.Ingredients);
+        Recipe = sourceRecipe.CopyRecipe();
+        Ingredients = new ObservableCollection<string>(Recipe.Ingredients);
 
         UpdateOwnerOrAdmin();
 
@@ -183,12 +183,7 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
 
     private void UpdateOwnerOrAdmin() {
         var current = _userManager.GetLoggedIn();
-        if (Recipe == null || current == null) {
-            IsOwnerOrAdmin = _userManager.IsAdmin; // reflect admin even if no detailed recipe/current user
-            return;
-        }
-
-        IsOwnerOrAdmin = _userManager.IsAdmin || current.Id == Recipe.Owner.Id;
+        IsOwnerOrAdmin = _userManager.IsAdmin || current?.Id == Recipe?.Owner?.Id;
     }
 
     private void AddIngredient() {
@@ -220,10 +215,6 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
             Recipe.Category = Category;
             Recipe.Owner = Owner;
 
-            // Note: Owner (Owner) on Recipe model is init-only. This viewlet allows selecting an owner
-            // in the UI (for admins) but the existing Recipe.EditRecipe method doesn't update Owner.
-            // Persisting a change to the owner would require changing the model or manager API.
-            // For now we keep the existing EditRecipe flow.
             _sourceRecipe.EditRecipe(Recipe.Title, Recipe.Ingredients, Recipe.Instructions, Recipe.Category, Recipe.Owner);
             IsDirty = false;
             RequestClose?.Invoke(true);
