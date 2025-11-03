@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:CookMaster.Views"
         xmlns:behaviors="clr-namespace:CookMaster.Behaviors"
         mc:Ignorable="d"
-        Title="RegisterWindow" Height="600" Width="800"
+        Title="RegisterWindow" Height="550" Width="800"
         WindowStartupLocation="CenterOwner"
         Style="{StaticResource {x:Type Window}}">
     <Grid Margin="8">

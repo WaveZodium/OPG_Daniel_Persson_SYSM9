@@ -27,7 +27,6 @@ public class RegisterWindowViewModel : ViewModelBase {
     public string Username {
         get { return _username; }
         set {
-            // check if username exists in the system
             if (!string.IsNullOrWhiteSpace(value) && _userManager.UserExists(value)) {
                 _usernameError = "Username already exists. Please choose another.";
             }
@@ -35,6 +34,7 @@ public class RegisterWindowViewModel : ViewModelBase {
 
             OnPropertyChanged(nameof(UsernameError));
             _username = value;
+            PerformRegisterCommand.RaiseCanExecuteChanged();
         }
     }
 
@@ -51,6 +51,7 @@ public class RegisterWindowViewModel : ViewModelBase {
             if (Set(ref _password, value)) {
                 ValidatePasswordStrength(value);   // Re-enabled strength evaluation
                 UpdatePasswordMatch();
+                PerformRegisterCommand.RaiseCanExecuteChanged();
             }
         }
     }
@@ -61,6 +62,7 @@ public class RegisterWindowViewModel : ViewModelBase {
         set {
             if (Set(ref _confirmPassword, value)) {
                 UpdatePasswordMatch();
+                PerformRegisterCommand.RaiseCanExecuteChanged();
             }
         }
     }
@@ -71,6 +73,7 @@ public class RegisterWindowViewModel : ViewModelBase {
         set {
             if (Set(ref _email, value)) {
                 ValidateEmailFormat(value);
+                PerformRegisterCommand.RaiseCanExecuteChanged();
             }
         }
     }
@@ -95,7 +98,7 @@ public class RegisterWindowViewModel : ViewModelBase {
         }
     }
 
-    private string _passwordStrengthText = "Too weak";
+    private string _passwordStrengthText;
     public string PasswordStrengthText {
         get => _passwordStrengthText;
         private set => Set(ref _passwordStrengthText, value);
@@ -203,7 +206,7 @@ public class RegisterWindowViewModel : ViewModelBase {
     private Country _selectedCountry;
     public Country SelectedCountry {
         get { return _selectedCountry; }
-        set { _selectedCountry = value; }
+        set { _selectedCountry = value; PerformRegisterCommand.RaiseCanExecuteChanged(); }
     }
 
     public IEnumerable<Country> Countries { get; } =
@@ -212,13 +215,13 @@ public class RegisterWindowViewModel : ViewModelBase {
     public string _securityQuestion;
     public string SecurityQuestion {
         get { return _securityQuestion; }
-        set { _securityQuestion = value; }
+        set { _securityQuestion = value; PerformRegisterCommand.RaiseCanExecuteChanged(); }
     }
 
     public string _securityAnswer;
     public string SecurityAnswer {
         get { return _securityAnswer; }
-        set { _securityAnswer = value; }
+        set { _securityAnswer = value; PerformRegisterCommand.RaiseCanExecuteChanged(); }
     }
 
     public RegisterWindowViewModel(UserManager userManager, IServiceProvider services, IDialogService dialogService) {
@@ -226,18 +229,39 @@ public class RegisterWindowViewModel : ViewModelBase {
         _services = services;
         _dialogService = dialogService;
 
-        PerformRegisterCommand = new RelayCommand(_ => PerformRegister());
+        PerformRegisterCommand = new RelayCommand(_ => PerformRegister(), CanRegister);
         PerformCancelCommand = new RelayCommand(_ => PerformCancel());
     }
+
+    private bool CanRegister(object? _) =>
+        !string.IsNullOrWhiteSpace(Username) &&
+        !string.IsNullOrWhiteSpace(Password) &&
+        !string.IsNullOrWhiteSpace(ConfirmPassword) &&
+        PasswordsMatch &&
+        !string.IsNullOrWhiteSpace(Email) &&
+        string.IsNullOrEmpty(EmailError) &&
+        string.IsNullOrEmpty(UsernameError) &&
+        !string.IsNullOrWhiteSpace(SecurityQuestion) &&
+        !string.IsNullOrWhiteSpace(SecurityAnswer);
 
     private void PerformRegister() {
         MessageBox.Show("Performing registration...", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
 
-        /*
-         if (!UserExists("user2")) {
-            CreateUser("user2", "password", UserRole.User, Country.Sweden, "user2@cookmaster.wavezodium.dev", "What is your favorite food?", "Carbonara");
-        }
-         * */
+        Username = Username?.Trim();
+        Email = Email?.Trim();
+        SecurityQuestion = SecurityQuestion?.Trim();
+        SecurityAnswer = SecurityAnswer?.Trim();
+        var newUser = new User(
+            Username,
+            Password,
+            UserRole.User,
+            SelectedCountry,
+            Email,
+            SecurityQuestion,
+            SecurityAnswer
+        );
+
+        _userManager.CreateUser(newUser);
 
         // For now assume registration succeeded and request close:
         RequestClose?.Invoke(true);

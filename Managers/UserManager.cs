@@ -43,6 +43,13 @@ public class UserManager {
         return true;
     }
 
+    public bool CreateUser(User user) {
+        if (user == null) return false;
+        if (UserExists(user.Username)) return false;
+        Users.Add(user);
+        return true;
+    }
+
     public bool DeleteUser(string username) {
         var user = FindUser(username);
         if (user == null) return false;
