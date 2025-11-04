@@ -23,21 +23,21 @@
                      Margin="3, 0, 3, 3" Padding="3"
                      Style="{StaticResource RoundedTextBoxStyle}"
                      behaviors:FocusBehavior.IsFocused="{Binding FocusUsername, Mode=TwoWay}"
-                     behaviors:EnterKeyBehavior.EnterKeyCommand="{Binding TryLoginCommand}" />
+                     behaviors:EnterKeyBehavior.EnterKeyCommand="{Binding TrySignInCommand}" />
 
             <TextBlock Text="Password:" Margin="3" FontSize="14" FontWeight="DemiBold"/>
             <PasswordBox Margin="3, 0, 3, 3" Padding="3"
                          Style="{StaticResource RoundedPasswordBoxStyle}"
                          behaviors:PasswordBoxAssistant.BindPassword="True"
                          behaviors:PasswordBoxAssistant.BoundPassword="{Binding Password, Mode=TwoWay}"
-                         behaviors:EnterKeyBehavior.EnterKeyCommand="{Binding TryLoginCommand}" />
+                         behaviors:EnterKeyBehavior.EnterKeyCommand="{Binding TrySignInCommand}" />
 
             <TextBlock FontSize="12" HorizontalAlignment="Center" TextAlignment="Center" Margin="3">
                 <Hyperlink Command="{Binding ForgotPasswordCommand}">Forgot password?</Hyperlink>
             </TextBlock>
 
             <StackPanel Orientation="Horizontal" Margin="0 21 0 0" HorizontalAlignment="Center">
-                <Button Content="Login" Command="{Binding TryLoginCommand}" 
+                <Button Content="Sign In" Command="{Binding TrySignInCommand}" 
                         Width="100" Height="30" Margin="6"
                         Style="{StaticResource ButtonLightGrayStyle}"
                         />

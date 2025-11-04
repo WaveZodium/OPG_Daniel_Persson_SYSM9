@@ -13,7 +13,10 @@ public class UserManager {
     public List<User> GetAllUsers() => Users;
 
     public bool UserExists(string username) {
+        // Validate input
         if (string.IsNullOrWhiteSpace(username)) return false;
+
+        // Case-insensitive search
         return Users.Any(u => string.Equals(u.Username, username.Trim(), StringComparison.OrdinalIgnoreCase));
     }
 
@@ -24,26 +27,40 @@ public class UserManager {
                            string email = "",
                            string securityQuestion = "",
                            string securityAnswer = "") {
+        // Validate input
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password)) return false;
+
+        // Check for existing user
         if (UserExists(username)) return false;
 
         User user;
 
+        // Create user based on role
         if (role == UserRole.Admin) {
             user = new AdminUser(username.Trim(), password, country, email, securityQuestion, securityAnswer);
         }
         else {
             user = new User(username.Trim(), password, role, country, email, securityQuestion, securityAnswer);
         }
+
+        // Add user
         Users.Add(user);
 
+        // Successful creation
         return true;
     }
 
     public bool CreateUser(User user) {
+        // Validate input
         if (user == null) return false;
+
+        // Check for existing user
         if (UserExists(user.Username)) return false;
+
+        // Add user
         Users.Add(user);
+
+        // Successful creation
         return true;
     }
 
@@ -59,15 +76,28 @@ public class UserManager {
     }
 
     public User? FindUser(string username) {
+        // Validate input
+        if (string.IsNullOrWhiteSpace(username)) return null;
+
+        // Case-insensitive search
         return Users.Find(u => string.Equals(u.Username, username, StringComparison.OrdinalIgnoreCase));
     }
 
     public bool SignIn(string username, string password) {
+        // Validate input
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password)) return false;
-        var user = FindUser(username);
-        if (user == null) return false;
+
+        // Find user. Case-insensitive search. Return false if not found.
+        User? user;
+        if ((user = FindUser(username)) is null) return false;
+
+        // Validate password. Return false if invalid.
         if (!user.ValidatePassword(password)) return false;
+
+        // Set logged-in user.
         _loggedInUser = user;
+
+        // Successful login
         return true;
     }
 

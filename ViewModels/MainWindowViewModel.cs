@@ -17,7 +17,7 @@ public class MainWindowViewModel : ViewModelBase {
         get => _username;
         set {
             if (Set(ref _username, value)) {
-                TryLoginCommand?.RaiseCanExecuteChanged();
+                TrySignInCommand?.RaiseCanExecuteChanged();
             }
         }
     }
@@ -28,7 +28,7 @@ public class MainWindowViewModel : ViewModelBase {
         get => _password;
         set {
             if (Set(ref _password, value)) {
-                TryLoginCommand?.RaiseCanExecuteChanged();
+                TrySignInCommand?.RaiseCanExecuteChanged();
             }
         }
     }
@@ -40,7 +40,7 @@ public class MainWindowViewModel : ViewModelBase {
         set => Set(ref _focusUsername, value);
     }
 
-    public RelayCommand TryLoginCommand { get; }
+    public RelayCommand TrySignInCommand { get; }
     public RelayCommand OpenRecipeListWindowCommand { get; }
     public RelayCommand OpenRegisterWindowCommand { get; }
     public RelayCommand ForgotPasswordCommand { get; }
@@ -51,7 +51,7 @@ public class MainWindowViewModel : ViewModelBase {
         _services = services;
 
         // canExecute returns true only when both fields are non-empty
-        TryLoginCommand = new RelayCommand(_ => TryLogin(), _ => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password));
+        TrySignInCommand = new RelayCommand(_ => TrySignIn(), _ => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password));
         OpenRecipeListWindowCommand = new RelayCommand(_ => OpenRecipeListWindow());
         OpenRegisterWindowCommand = new RelayCommand(_ => OpenRegisterWindow());
         ForgotPasswordCommand = new RelayCommand(_ => ForgotPassword());
@@ -60,7 +60,7 @@ public class MainWindowViewModel : ViewModelBase {
         FocusUsername = true;
     }
 
-    private void TryLogin() {
+    private void TrySignIn() {
         // Use bound properties from the view
         var username = Username?.Trim() ?? string.Empty;
         var password = Password ?? string.Empty;
@@ -101,8 +101,16 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     private void ForgotPassword() {
-        // Caught by the ViewModel when the Hyperlink is clicked.
-        // Replace this with your reset flow (open a window, send email, navigate, etc.)
-        MessageBox.Show("Forgot password clicked. Implement the password recovery flow in ForgotPassword().", "Forgot Password", MessageBoxButton.OK, MessageBoxImage.Information);
+        // Use a scope and open RegisterWindow as a modal dialog; dispose immediately after
+        using var scope = _services.CreateScope();
+        var window = scope.ServiceProvider.GetRequiredService<ForgotPasswordWindow>();
+
+        // ShowDialog blocks until closed; scope is disposed when leaving using block
+        var result = window.ShowDialog();
+        
+        if (result == true) {
+            MessageBox.Show("Password updated successfully. You can now log in with your new password.", "Password Updated", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
     }
 }

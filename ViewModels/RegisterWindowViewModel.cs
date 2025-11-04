@@ -161,41 +161,17 @@ public class RegisterWindowViewModel : ViewModelBase {
     // +1 digit
     // +1 symbol
     private void ValidatePasswordStrength(string? value) {
-        var pwd = value ?? string.Empty;
+        var result = PasswordStrengthService.Evaluate(value ?? string.Empty);
 
-        bool hasLower = pwd.Any(char.IsLower);
-        bool hasUpper = pwd.Any(char.IsUpper);
-        bool hasDigit = pwd.Any(char.IsDigit);
-        bool hasSymbol = pwd.Any(ch => !char.IsLetterOrDigit(ch));
-
-        int score = 0;
-        if (pwd.Length >= 8) score++;
-        if (hasLower && hasUpper) score++;
-        if (hasDigit) score++;
-        if (hasSymbol) score++;
-
-        score = Math.Clamp(score, 0, 4);
-        PasswordStrengthScore = score;
-
-        switch (score) {
-            case 0:
-            case 1:
-                PasswordStrengthText = pwd.Length > 0 && pwd.Length < 8 ? "Too short" : "Weak";
-                PasswordStrengthBrush = Brushes.IndianRed;
-                break;
-            case 2:
-                PasswordStrengthText = "Fair";
-                PasswordStrengthBrush = Brushes.Orange;
-                break;
-            case 3:
-                PasswordStrengthText = "Strong";
-                PasswordStrengthBrush = Brushes.YellowGreen;
-                break;
-            case 4:
-                PasswordStrengthText = "Very strong";
-                PasswordStrengthBrush = Brushes.ForestGreen;
-                break;
-        }
+        PasswordStrengthScore = result.Score;
+        PasswordStrengthText = result.Label;
+        PasswordStrengthBrush = result.Score switch {
+            0 or 1 => Brushes.IndianRed,
+            2 => Brushes.Orange,
+            3 => Brushes.YellowGreen,
+            4 => Brushes.ForestGreen,
+            _ => Brushes.Gray
+        };
     }
 
     private Country _selectedCountry;

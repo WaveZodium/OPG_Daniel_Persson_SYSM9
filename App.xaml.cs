@@ -60,6 +60,9 @@ public partial class App : Application {
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<MainWindow>();
 
+        services.AddTransient<ForgotPasswordViewModel>();
+        services.AddTransient<ForgotPasswordWindow>();
+
         services.AddTransient<RegisterWindowViewModel>();
         services.AddTransient<RegisterWindow>();
 
