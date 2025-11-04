@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media;
+using System.Linq; // <-- add
 
 using CookMaster.Managers;
 using CookMaster.Models;
@@ -204,11 +205,20 @@ public class RegisterWindowViewModel : ViewModelBase {
         PerformCancelCommand = new RelayCommand(_ => PerformCancel());
     }
 
+    // Explicit VG policy: >=8 chars, at least one digit and one special character
+    private static bool MeetsPasswordPolicy(string? pwd) {
+        var p = pwd ?? string.Empty;
+        return p.Length >= 8
+            && p.Any(char.IsDigit)
+            && p.Any(ch => !char.IsLetterOrDigit(ch));
+    }
+
     private bool CanRegister(object? _) =>
         !string.IsNullOrWhiteSpace(Username) &&
         !string.IsNullOrWhiteSpace(Password) &&
         !string.IsNullOrWhiteSpace(ConfirmPassword) &&
         PasswordsMatch &&
+        MeetsPasswordPolicy(Password) && // <-- enforce explicit requirement
         !string.IsNullOrWhiteSpace(Email) &&
         string.IsNullOrEmpty(EmailError) &&
         string.IsNullOrEmpty(UsernameError) &&

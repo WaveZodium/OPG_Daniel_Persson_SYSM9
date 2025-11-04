@@ -1,4 +1,5 @@
-﻿using System.Windows.Media;
+﻿using System.Linq;
+using System.Windows.Media;
 using CookMaster.Managers;
 using CookMaster.Models;
 using CookMaster.MVVM;
@@ -149,13 +150,16 @@ namespace CookMaster.ViewModels
             PerformCancelCommand = new RelayCommand(_ => PerformCancel());
             LoadSecurityQuestionCommand = new RelayCommand(_ => LoadSecurityQuestion());
             CheckSecurityAnswerCommand = new RelayCommand(_ => CheckSecurityAnswer());
-            PerformUpdatePasswordCommand = new RelayCommand(_ => PerformUpdatePassword(), _ => PasswordsMatch);
+            PerformUpdatePasswordCommand = new RelayCommand(
+                _ => PerformUpdatePassword(),
+                _ => PasswordsMatch && MeetsPasswordPolicy(NewPassword) // <-- enforce explicit requirement
+            );
 
-            CanEditFields = false;
-            CanEditPassword = false;
+        CanEditFields = false;
+        CanEditPassword = false;
 
-            // Request initial focus on the username box (bound to the attached behavior)
-            FocusUsername = true;
+        // Request initial focus on the username box (bound to the attached behavior)
+        FocusUsername = true;
         }
 
         private void UpdatePasswordStrength(string? value) {
@@ -169,6 +173,14 @@ namespace CookMaster.ViewModels
                 4 => Brushes.ForestGreen,
                 _ => Brushes.Gray
             };
+        }
+
+        // Explicit VG policy: >=8 chars, at least one digit and one special character
+        private static bool MeetsPasswordPolicy(string? pwd) {
+            var p = pwd ?? string.Empty;
+            return p.Length >= 8
+                && p.Any(char.IsDigit)
+                && p.Any(ch => !char.IsLetterOrDigit(ch));
         }
 
         private void CheckSecurityAnswer() {
@@ -202,7 +214,7 @@ namespace CookMaster.ViewModels
         }
 
         private void PerformUpdatePassword() {
-            if (User == null || !PasswordsMatch) return;
+            if (User == null || !PasswordsMatch || !MeetsPasswordPolicy(NewPassword)) return;
 
             // Update the user's password and close dialog as success
             User.SetPassword(NewPassword);
