@@ -6,18 +6,29 @@
         xmlns:local="clr-namespace:CookMaster.Views"
         xmlns:behaviors="clr-namespace:CookMaster.Behaviors"
         mc:Ignorable="d"
-        Title="RegisterWindow" Height="550" Width="800"
+        Title="RegisterWindow" Height="560" Width="800"
         WindowStartupLocation="CenterOwner"
         Style="{StaticResource {x:Type Window}}">
     <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Column="0">
-            <Label Content="Register New User" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
+            <Image Source="{StaticResource SteamingPotImage}" HorizontalAlignment="Center"
+                   Width="30" Height="30" Stretch="Uniform" Margin="0,0,0,0"/>
+            <TextBlock Text="Register New User" FontSize="20" FontWeight="Bold" Margin="4" />
+        </StackPanel>
 
+        <!-- Registration Form -->
+        <StackPanel Grid.Row="2" Grid.Column="0">
             <TextBlock Text="Username" Margin="4"/>
             <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" Margin="4"/>
             <TextBlock Text="{Binding UsernameError}" Foreground="Red" Margin="4,4,0,0"/>
@@ -118,7 +129,7 @@
             <TextBox Text="{Binding SecurityAnswer, UpdateSourceTrigger=PropertyChanged}" Margin="4"/>
         </StackPanel>
 
-        <StackPanel Grid.Column="1">
+        <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="3">
             <Button Content="Register" Width="160" Height="30" Margin="4" 
                     ToolTip="Register a new user"
                     Command="{Binding PerformRegisterCommand}"

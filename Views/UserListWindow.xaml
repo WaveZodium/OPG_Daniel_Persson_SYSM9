@@ -5,13 +5,25 @@
         WindowStartupLocation="CenterOwner"
         Style="{StaticResource {x:Type Window}}">
     <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
+            <Image Source="{StaticResource SteamingPotImage}" HorizontalAlignment="Center"
+           Width="30" Height="30" Stretch="Uniform" Margin="0,0,0,0"/>
+            <TextBlock Text="Users List" FontSize="20" FontWeight="Bold" Margin="4" />
+        </StackPanel>
+
         <!-- Right column: buttons -->
-        <StackPanel Grid.Column="1" Margin="4,0,0,0">
+        <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="3" Margin="4,0,0,0">
             <Button Content="Add User" Width="160" Height="30" Margin="4" 
                     ToolTip="Add a new user"
                     Command="{Binding PerformAddUserCommand}"/>
@@ -29,7 +41,7 @@
         </StackPanel>
 
         <!-- Left column: user list -->
-        <StackPanel Grid.Column="0">
+        <StackPanel Grid.Row="2" Grid.Column="0">
             <Label Content="User List" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             <DataGrid Grid.Row="2" Grid.Column="0" ItemsSource="{Binding Users}" 
                       SelectedItem="{Binding SelectedUser}" 

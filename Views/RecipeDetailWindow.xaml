@@ -5,13 +5,25 @@
         WindowStartupLocation="CenterOwner"
         Style="{StaticResource {x:Type Window}}">
     <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
+            <Image Source="{StaticResource SteamingPotImage}" HorizontalAlignment="Center"
+                   Width="30" Height="30" Stretch="Uniform" Margin="0,0,0,0"/>
+            <TextBlock Text="Recipe Details" FontSize="20" FontWeight="Bold" Margin="4" />
+        </StackPanel>
+
         <!-- Right column: buttons -->
-        <StackPanel Grid.Column="1" Margin="4,0,0,0">
+        <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="3" Margin="4,0,0,0">
             <Button Content="Save &amp; Close" Width="160" Height="30" Margin="4" 
                     ToolTip="Save changes and close the window"
                     Command="{Binding PerformSaveCommand}"
@@ -31,8 +43,7 @@
         </StackPanel>
 
         <!-- Left column: recipe details -->
-        <StackPanel Grid.Column="0">
-            <Label Content="Recipe Details" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <StackPanel Grid.Row="2" Grid.Column="0">
             <TextBlock Text="Title" Margin="4"/>
             <TextBox Margin="4"
                      Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
