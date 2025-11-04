@@ -126,7 +126,7 @@ public class AddRecipeWindowViewModel : ViewModelBase {
         _userManager = userManager;
         _dialogService = dialogService;
 
-        PerformAddCommand = new RelayCommand(_ => PerformAdd());
+        PerformAddCommand = new RelayCommand(_ => PerformAdd(), CanAdd);
         PerformCancelCommand = new RelayCommand(_ => PerformCancel());
 
         AddIngredientCommand = new RelayCommand(_ => AddIngredient(), _ => !string.IsNullOrWhiteSpace(NewIngredientText));
@@ -141,6 +141,12 @@ public class AddRecipeWindowViewModel : ViewModelBase {
         }
         Recipe = new Recipe(string.Empty, new List<string>(), string.Empty, RecipeCategory.Unknown, DateTime.Now, DateTime.Now, owner);
     }
+
+    private bool CanAdd(object? _) =>
+        !string.IsNullOrWhiteSpace(Title) &&
+        Ingredients.Count >= 1 &&
+        !string.IsNullOrWhiteSpace(Instructions) &&
+        Category != RecipeCategory.Unknown;
 
     private void AddIngredient() {
         var text = NewIngredientText?.Trim();

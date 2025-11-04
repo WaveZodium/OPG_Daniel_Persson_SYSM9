@@ -198,9 +198,6 @@ public class RegisterWindowViewModel : ViewModelBase {
         }
     }
 
-    private Window? FindOwnerWindow() =>
-        Application.Current?.Windows.OfType<Window>().FirstOrDefault(w => ReferenceEquals(w.DataContext, this));
-
     private Country _selectedCountry;
     public Country SelectedCountry {
         get { return _selectedCountry; }
