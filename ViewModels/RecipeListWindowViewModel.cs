@@ -22,6 +22,7 @@ public class RecipeListWindowViewModel : ViewModelBase {
     private readonly IDialogService _dialogService;
 
     // 3) Events
+    public event Action<bool>? RequestClose;
 
     // 4) Constructors
     public RecipeListWindowViewModel(RecipeManager recipeManager, UserManager userManager, IDialogService dialogService, IServiceProvider services) {
@@ -36,7 +37,7 @@ public class RecipeListWindowViewModel : ViewModelBase {
         IsLoggedIn = _userManager.IsLoggedIn;
         IsAdmin = _userManager.IsAdmin;
 
-        UodateRecipesList();
+        UpdateRecipesList();
 
         // initialize owner/admin state for current selection (if any)
         UpdateOwnerOrAdmin();
@@ -66,19 +67,8 @@ public class RecipeListWindowViewModel : ViewModelBase {
     public RelayCommand OpenUserListWindowCommand { get; }
 
     private void OpenMainWindow() {
-        // Create a scope so the new window and its dependencies get disposed when closed
-        var scope = _services.CreateScope();
-        var window = scope.ServiceProvider.GetRequiredService<MainWindow>();
-
-        // Dispose the scope when the window closes (non-modal)
-        window.Closed += (_, __) => scope.Dispose();
-
-        // Show the recipe list and close the main window (login flow)
-        window.Show();
-
-        // Close/hide MainWindow (the VM uses Application.Current to find it)
-        var main = Application.Current?.Windows.OfType<RecipeListWindow>().FirstOrDefault();
-        main?.Close();
+        // Signal: true => go back to login (logout flow)
+        RequestClose?.Invoke(true);
     }
 
     private void OpenAddRecipeWindow() {
@@ -94,7 +84,7 @@ public class RecipeListWindowViewModel : ViewModelBase {
         var dialogResult = window.ShowDialog();
 
         if (dialogResult == true) {
-            UodateRecipesList();
+            UpdateRecipesList();
             // selection may have changed -> recompute
             UpdateOwnerOrAdmin();
         }
@@ -121,37 +111,23 @@ public class RecipeListWindowViewModel : ViewModelBase {
 
         // Refresh list only when dialog indicated success (true)
         if (dialogResult == true) {
-            UodateRecipesList();
+            UpdateRecipesList();
             UpdateOwnerOrAdmin();
         }
     }
 
     private void OpenUserListWindow() {
-        // Find the currently open RecipeListWindow instance (the one that triggered this command)
-        var current = Application.Current?.Windows.OfType<RecipeListWindow>().FirstOrDefault();
+        // Use the current RecipeListWindow as owner
+        var owner = Application.Current?.Windows.OfType<RecipeListWindow>().FirstOrDefault();
 
-        // Hide the recipe list window so it disappears behind the modal dialog
-        current?.Hide();
+        // Open the UserListWindow as a modal dialog from a DI scope
+        using var scope = _services.CreateScope();
+        var window = scope.ServiceProvider.GetRequiredService<UserListWindow>();
 
-        try {
-            // Open the UserListWindow as a modal dialog from a DI scope
-            using var scope = _services.CreateScope();
-            var window = scope.ServiceProvider.GetRequiredService<UserListWindow>();
+        if (owner != null)
+            window.Owner = owner;
 
-            // Set the owner to keep proper window parenting (optional, but recommended)
-            if (current != null)
-                window.Owner = current;
-
-            // Show dialog; this blocks until the userlist window closes (either via X or Close button)
-            window.ShowDialog();
-        }
-        finally {
-            // When the dialog closes, restore the same RecipeListWindow instance
-            if (current != null) {
-                current.Show();
-                current.Activate();
-            }
-        }
+        window.ShowDialog();
     }
 
     private void PerformDelete() {
@@ -167,7 +143,7 @@ public class RecipeListWindowViewModel : ViewModelBase {
         if (confirm.Value) {
             _recipeManager.RemoveRecipe(_selectedRecipe);
             _selectedRecipe = null;
-            UodateRecipesList();
+            UpdateRecipesList();
         }
     }
 
@@ -238,7 +214,7 @@ public class RecipeListWindowViewModel : ViewModelBase {
         IsOwnerOrAdmin = _userManager.IsAdmin || (current != null && SelectedRecipe?.Owner?.Id == current.Id);
     }
 
-    private void UodateRecipesList() {
+    private void UpdateRecipesList() {
         if (IsAdmin) {
             Recipes = new ObservableCollection<Recipe>(_recipeManager.GetAllRecipes());
         }
@@ -247,6 +223,16 @@ public class RecipeListWindowViewModel : ViewModelBase {
                 Recipes = new ObservableCollection<Recipe>(_recipeManager.GetByOwner(_userManager.CurrentUser));
         }
     }
+    private static Window? GetActiveWindow() {
+        var app = Application.Current;
+        if (app == null) return null;
+
+        // Prefer the active focused window; fall back to any visible/enabled; then MainWindow
+        return app.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+            ?? app.Windows.OfType<Window>().FirstOrDefault(w => w.IsVisible && w.IsEnabled)
+            ?? app.MainWindow;
+    }
+
 
     // 11) Nested types (none)
 }

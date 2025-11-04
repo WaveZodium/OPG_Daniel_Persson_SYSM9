@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System.Diagnostics.Metrics;
+using System.Linq;
+using System.Windows;
 
 using CookMaster.Managers;
 using CookMaster.MVVM;
@@ -46,6 +48,9 @@ public class MainWindowViewModel : ViewModelBase {
 
         if (_userManager.SignIn(username, password)) {
             // Successful login; open recipe list window
+            Username = string.Empty;
+            Password = string.Empty;
+
             OpenRecipeListWindow();
         }
         else {
@@ -55,40 +60,91 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     private void OpenRecipeListWindow() {
-        // Create a scope so the new window and its dependencies get disposed when closed
-        var scope = _services.CreateScope();
-        var window = scope.ServiceProvider.GetRequiredService<RecipeListWindow>();
+        var current = GetActiveWindow();
+        current?.Hide();
 
-        // Dispose the scope when the window closes (non-modal)
-        window.Closed += (_, __) => scope.Dispose();
+        try {
+            using var scope = _services.CreateScope();
+            var window = scope.ServiceProvider.GetRequiredService<RecipeListWindow>();
 
-        // Show the recipe list and close the main window (login flow)
-        window.Show();
+            if (current != null)
+                window.Owner = current;
 
-        // Close/hide MainWindow (the VM uses Application.Current to find it)
-        var main = Application.Current?.Windows.OfType<MainWindow>().FirstOrDefault();
-        main?.Close();
+            var result = window.ShowDialog();
+
+            if (result == true) {
+                if (current != null) {
+                    current.Show();
+                    current.Activate();
+                    FocusUsername = true;
+                }
+            }
+            else {
+                Application.Current.Shutdown();
+            }
+        }
+        catch {
+            if (current != null) {
+                current.Show();
+                current.Activate();
+            }
+            throw;
+        }
     }
 
     private void OpenRegisterWindow() {
-        // Use a scope and open RegisterWindow as a modal dialog; dispose immediately after
-        using var scope = _services.CreateScope();
-        var window = scope.ServiceProvider.GetRequiredService<RegisterWindow>();
+        // Find the current active window (owner), regardless of type
+        var current = GetActiveWindow();
 
-        // ShowDialog blocks until closed; scope is disposed when leaving using block
-        window.ShowDialog();
+        // Hide the current window so it disappears behind the modal dialog
+        current?.Hide();
+
+        try {
+            // Open the RegisterWindow as a modal dialog from a DI scope
+            using var scope = _services.CreateScope();
+            var window = scope.ServiceProvider.GetRequiredService<RegisterWindow>();
+
+            // Set the owner to keep proper window parenting (optional, but recommended)
+            if (current != null)
+                window.Owner = current;
+
+            // Show dialog; this blocks until the register window closes (either via X or Close button)
+            window.ShowDialog();
+        }
+        finally {
+            // When the dialog closes, restore the same window
+            if (current != null) {
+                current.Show();
+                current.Activate();
+            }
+        }
     }
 
     private void ForgotPassword() {
-        // Use a scope and open ForgotPasswordWindow as a modal dialog; dispose immediately after
-        using var scope = _services.CreateScope();
-        var window = scope.ServiceProvider.GetRequiredService<ForgotPasswordWindow>();
+        // Find the current active window (owner), regardless of type
+        var current = GetActiveWindow();
 
-        // ShowDialog blocks until closed; scope is disposed when leaving using block
-        var result = window.ShowDialog();
+        // Hide the current window so it disappears behind the modal dialog
+        current?.Hide();
 
-        if (result == true) {
-            MessageBox.Show("Password updated successfully. You can now log in with your new password.", "Password Updated", MessageBoxButton.OK, MessageBoxImage.Information);
+        try {
+            // Open the ForgotPasswordWindow as a modal dialog from a DI scope
+            using var scope = _services.CreateScope();
+            var window = scope.ServiceProvider.GetRequiredService<ForgotPasswordWindow>();
+
+            // Set the owner to keep proper window parenting (optional, but recommended)
+            if (current != null)
+                window.Owner = current;
+
+            // Show dialog; this blocks until the register window closes (either via X or Close button)
+            window.ShowDialog();
+        }
+        finally {
+            // When the dialog closes, restore the same window
+            if (current != null) {
+                current.Show();
+                current.Activate();
+            }
         }
     }
 
@@ -128,6 +184,15 @@ public class MainWindowViewModel : ViewModelBase {
     // 9) Collections
 
     // 10) Private helpers/validation
+    private static Window? GetActiveWindow() {
+        var app = Application.Current;
+        if (app == null) return null;
+
+        // Prefer the active focused window; fall back to any visible/enabled; then MainWindow
+        return app.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+            ?? app.Windows.OfType<Window>().FirstOrDefault(w => w.IsVisible && w.IsEnabled)
+            ?? app.MainWindow;
+    }
 
     // 11) Nested types (none)
 }
