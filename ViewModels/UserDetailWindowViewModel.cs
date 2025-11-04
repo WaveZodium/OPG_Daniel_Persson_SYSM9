@@ -1,6 +1,6 @@
 ﻿using CookMaster.Managers;
-using CookMaster.MVVM;
 using CookMaster.Models;
+using CookMaster.MVVM;
 
 namespace CookMaster.ViewModels;
 

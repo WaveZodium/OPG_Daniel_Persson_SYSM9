@@ -1,11 +1,10 @@
-﻿using CookMaster.Managers;
+﻿using System.Collections.ObjectModel;
+using System.Windows;
+
+using CookMaster.Managers;
 using CookMaster.Models;
 using CookMaster.MVVM;
 using CookMaster.Services;
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Windows;
 
 namespace CookMaster.ViewModels;
 
@@ -187,7 +186,6 @@ public class AddRecipeWindowViewModel : ViewModelBase {
     }
 
     private void PerformCancel() {
-        MessageBox.Show($"Recipe addition cancelled. IsDirty={IsDirty}", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
         // Request the view to close and indicate cancellation
         RequestClose?.Invoke(false);
     }

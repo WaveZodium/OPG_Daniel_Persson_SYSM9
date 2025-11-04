@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CookMaster.Views"
         mc:Ignorable="d"
-        Title="RecipeListWindow" Height="450" Width="800"
+        Title="Recipe List" Height="450" Width="800"
         WindowStartupLocation="CenterOwner"
         Style="{StaticResource {x:Type Window}}">
     <Grid Margin="8">
@@ -36,29 +36,32 @@
                 <TextBlock Text="{Binding LoggedInUserName}" FontWeight="Bold" />
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="8,0,0,0">
-
                 <!-- Icon button that triggers logout; icon color changes on hover.
                      Removed hover Background so only the icon color changes. -->
                 <TextBlock FontSize="12" HorizontalAlignment="Right" TextAlignment="Center" Margin="3" 
                            Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}">
                     <Hyperlink Command="{Binding TryLogoutCommand}">Logout</Hyperlink>
                 </TextBlock>
-
             </StackPanel>
         </Grid>
 
         <!-- Left column: recipe list -->
-        <DataGrid Grid.Row="2" Grid.Column="0" ItemsSource="{Binding Recipes}" 
+        <ScrollViewer Grid.Row="2" Grid.Column="0"
+              VerticalScrollBarVisibility="Auto"
+              HorizontalScrollBarVisibility="Disabled"
+              CanContentScroll="True">
+            <DataGrid ItemsSource="{Binding Recipes}" 
                   SelectedItem="{Binding SelectedRecipe}" 
                   AutoGenerateColumns="False" 
                   Height="auto" Margin="0,0,0,0"
                   IsReadOnly="True">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Recipe Name" Binding="{Binding Title}" Width="*"/>
-                <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="*"/>
-                <DataGridTextColumn Header="Owner" Binding="{Binding Owner.Username}" Width="*"/>
-            </DataGrid.Columns>
-        </DataGrid>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Recipe Name" Binding="{Binding Title}" Width="*"/>
+                    <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="*"/>
+                    <DataGridTextColumn Header="Owner" Binding="{Binding Owner.Username}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </ScrollViewer>
 
         <!-- Right column: username + buttons -->
         <StackPanel Grid.Row="2" Grid.Column="1" Margin="4,0,0,0">

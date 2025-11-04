@@ -1,4 +1,3 @@
-using System;
 using CookMaster.MVVM;
 
 namespace CookMaster.ViewModels;

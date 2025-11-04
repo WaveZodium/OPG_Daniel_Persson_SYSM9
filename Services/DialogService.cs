@@ -1,5 +1,6 @@
-using CookMaster.Views;
 using System.Windows;
+
+using CookMaster.Views;
 
 namespace CookMaster.Services;
 

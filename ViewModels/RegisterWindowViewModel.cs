@@ -1,13 +1,11 @@
-﻿using System;
+﻿using System.Text.RegularExpressions;
 using System.Windows;
-using CookMaster.MVVM;
+using System.Windows.Media;
+
 using CookMaster.Managers;
 using CookMaster.Models;
-using Microsoft.Extensions.DependencyInjection;
+using CookMaster.MVVM;
 using CookMaster.Services;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Windows.Media;
 
 namespace CookMaster.ViewModels;
 
@@ -49,7 +47,7 @@ public class RegisterWindowViewModel : ViewModelBase {
         get { return _password; }
         set {
             if (Set(ref _password, value)) {
-                ValidatePasswordStrength(value);   // Re-enabled strength evaluation
+                ValidatePasswordStrength(value);
                 UpdatePasswordMatch();
                 PerformRegisterCommand.RaiseCanExecuteChanged();
             }

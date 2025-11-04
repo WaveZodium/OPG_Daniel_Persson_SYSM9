@@ -1,8 +1,6 @@
-﻿using CookMaster.ViewModels;
-using System.Windows;
-using System.Diagnostics;
-using System.Windows.Media;
-using System.Windows.Controls;
+﻿using System.Windows;
+
+using CookMaster.ViewModels;
 
 namespace CookMaster;
 

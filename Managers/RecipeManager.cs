@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using CookMaster.Models;
+﻿using CookMaster.Models;
 
 namespace CookMaster.Managers;
 
@@ -55,11 +52,11 @@ public class RecipeManager {
         if (user == null) return;
 
         if (!RecipeExists("Pancakes")) {
-            AddRecipe(new Recipe("Pancakes", new List<string>{ "Flour", "Eggs", "Milk" }, "Mix and fry", RecipeCategory.Breakfast, DateTime.Now, DateTime.Now, user));
+            AddRecipe(new Recipe("Pancakes", new List<string> { "Flour", "Eggs", "Milk" }, "Mix and fry", RecipeCategory.Breakfast, DateTime.Now, DateTime.Now, user));
         }
 
         if (!RecipeExists("Pasta Carbonara")) {
-            AddRecipe(new Recipe("Pasta Carbonara", new List<string>{ "Pasta", "Eggs", "Parmesan cheese" }, "Cook pasta and mix with eggs and cheese", RecipeCategory.MainCourse, DateTime.Now, DateTime.Now, user));
+            AddRecipe(new Recipe("Pasta Carbonara", new List<string> { "Pasta", "Eggs", "Parmesan cheese" }, "Cook pasta and mix with eggs and cheese", RecipeCategory.MainCourse, DateTime.Now, DateTime.Now, user));
         }
         if (!RecipeExists("Spaghetti Bolognese")) {
             // seed more recipes as user2
@@ -72,8 +69,8 @@ public class RecipeManager {
         var user2 = _userManager.FindUser("user2");
 
         if (user2 != null && !RecipeExists("Caesar Salad")) {
-            AddRecipe(new Recipe("Caesar Salad", new List<string>{ "Lettuce", "Croutons", "Caesar dressing" }, "Toss ingredients together", RecipeCategory.Salad, DateTime.Now, DateTime.Now, user2));
-        // seed more recipes as user2
+            AddRecipe(new Recipe("Caesar Salad", new List<string> { "Lettuce", "Croutons", "Caesar dressing" }, "Toss ingredients together", RecipeCategory.Salad, DateTime.Now, DateTime.Now, user2));
+            // seed more recipes as user2
         }
         if (user2 != null && !RecipeExists("Tomato Soup")) {
             AddRecipe(new Recipe("Tomato Soup", new List<string> { "Tomatoes", "Onion", "Garlic", "Vegetable broth" }, "Cook and blend ingredients", RecipeCategory.Soup, DateTime.Now, DateTime.Now, user2));
@@ -86,9 +83,9 @@ public class RecipeManager {
         var admin = _userManager.FindUser("admin");
 
         if (admin != null && !RecipeExists("Chocolate Cake")) {
-            AddRecipe(new Recipe("Chocolate Cake", new List<string>{ "Flour", "Cocoa powder", "Sugar", "Eggs", "Butter" }, "Mix ingredients and bake", RecipeCategory.Dessert, DateTime.Now, DateTime.Now, admin));
+            AddRecipe(new Recipe("Chocolate Cake", new List<string> { "Flour", "Cocoa powder", "Sugar", "Eggs", "Butter" }, "Mix ingredients and bake", RecipeCategory.Dessert, DateTime.Now, DateTime.Now, admin));
         }
-        
+
 
     }
 }

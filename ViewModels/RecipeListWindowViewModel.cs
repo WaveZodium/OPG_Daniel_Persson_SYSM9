@@ -1,10 +1,12 @@
-﻿using CookMaster.Managers;
+﻿using System.Collections.ObjectModel;
+using System.Windows;
+
+using CookMaster.Managers;
+using CookMaster.Models;
 using CookMaster.MVVM;
 using CookMaster.Views;
+
 using Microsoft.Extensions.DependencyInjection;
-using System.Collections.ObjectModel;
-using System.Windows;
-using CookMaster.Models;
 
 namespace CookMaster.ViewModels;
 

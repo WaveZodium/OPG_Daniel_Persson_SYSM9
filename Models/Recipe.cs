@@ -11,7 +11,7 @@ public class Recipe {
     public User? Owner { get; set; }
 
     public Recipe() {
-        
+
     }
 
     public Recipe(string title, List<string> ingredients, string instructions, RecipeCategory category, DateTime created, DateTime updated, User owner) {

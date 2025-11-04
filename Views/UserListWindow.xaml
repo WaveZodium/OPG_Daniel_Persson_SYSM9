@@ -1,7 +1,7 @@
 ﻿<Window x:Class="CookMaster.Views.UserListWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="UserListWindow" Height="550" Width="800"
+        Title="Users List" Height="550" Width="800"
         WindowStartupLocation="CenterOwner"
         Style="{StaticResource {x:Type Window}}">
     <Grid Margin="8">
@@ -41,18 +41,23 @@
         </StackPanel>
 
         <!-- Left column: user list -->
-        <StackPanel Grid.Row="2" Grid.Column="0">
-            <Label Content="User List" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            <DataGrid Grid.Row="2" Grid.Column="0" ItemsSource="{Binding Users}" 
+        <ScrollViewer Grid.Row="2" Grid.Column="0"
+              VerticalScrollBarVisibility="Auto"
+              HorizontalScrollBarVisibility="Disabled"
+              CanContentScroll="True">
+            <StackPanel >
+                <Label Content="User List" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <DataGrid Grid.Row="2" Grid.Column="0" ItemsSource="{Binding Users}" 
                       SelectedItem="{Binding SelectedUser}" 
                       AutoGenerateColumns="False" 
                       Height="auto" Margin="0,0,0,0"
                       IsReadOnly="True">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="User" Binding="{Binding Username}" Width="*"/>
-                    <DataGridTextColumn Header="Role" Binding="{Binding Role}" Width="*"/>
-                </DataGrid.Columns>
-            </DataGrid>
-        </StackPanel>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="User" Binding="{Binding Username}" Width="*"/>
+                        <DataGridTextColumn Header="Role" Binding="{Binding Role}" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Window>

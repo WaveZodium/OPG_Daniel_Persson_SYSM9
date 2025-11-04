@@ -1,12 +1,12 @@
-﻿using CookMaster.Managers;
+﻿using System.Windows;
+
+using CookMaster.Managers;
 using CookMaster.Models;
 using CookMaster.Services;
 using CookMaster.ViewModels;
 using CookMaster.Views;
+
 using Microsoft.Extensions.DependencyInjection;
-using System.Security.Policy;
-using System.Windows;
-using System.Windows.Shapes;
 
 namespace CookMaster;
 

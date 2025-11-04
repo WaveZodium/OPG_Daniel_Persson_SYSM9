@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using CookMaster.Models;
+﻿using CookMaster.Models;
 
 namespace CookMaster.Managers;
 
@@ -20,9 +17,9 @@ public class UserManager {
         return Users.Any(u => string.Equals(u.Username, username.Trim(), StringComparison.OrdinalIgnoreCase));
     }
 
-    public bool CreateUser(string username, 
-                           string password, 
-                           UserRole role = UserRole.User, 
+    public bool CreateUser(string username,
+                           string password,
+                           UserRole role = UserRole.User,
                            Country country = Country.Sweden,
                            string email = "",
                            string securityQuestion = "",

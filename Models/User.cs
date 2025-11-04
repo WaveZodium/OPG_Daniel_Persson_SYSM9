@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace CookMaster.Models;
+﻿namespace CookMaster.Models;
 
 public class User {
     public Guid Id { get; init; } = Guid.NewGuid();
@@ -14,7 +12,7 @@ public class User {
     public string SecurityQuestion { get; set; } = string.Empty;
     public string SecurityAnswer { get; set; } = string.Empty;
 
-    public User(string username, string password,  UserRole role, Country country, string email, string securityQuestion, string securityAnswer) {
+    public User(string username, string password, UserRole role, Country country, string email, string securityQuestion, string securityAnswer) {
         Username = username;
         SetPassword(password);
         Role = role;
