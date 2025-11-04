@@ -11,18 +11,80 @@ using CookMaster.Services;
 namespace CookMaster.ViewModels;
 
 public class RegisterWindowViewModel : ViewModelBase {
+    // 1) Constants / static
+    // Simple, pragmatic email regex:
+    // - Local part: common characters
+    // - Domain: one or more labels separated by dots, labels can't be empty
+    // - TLD: letters only, at least 2 chars (rejects trailing dot and one-letter TLDs)
+    private static readonly Regex EmailRegex = new(
+        @"^[A-Za-z0-9._%+\-']+@(?:[A-Za-z0-9\-]+\.)+[A-Za-z]{2,}$",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase
+    );
+
+    // 2) Dependencies (injected services/managers)
     private readonly UserManager _userManager;
-    private readonly IServiceProvider _services;
     private readonly IDialogService _dialogService;
 
+    // 3) Events
     // Event used to ask the view to close. Parameter indicates success (true) or cancel/fail (false).
     public event Action<bool>? RequestClose;
 
+    // 4) Constructors
+    public RegisterWindowViewModel(UserManager userManager, IDialogService dialogService) {
+        _userManager = userManager;
+        _dialogService = dialogService;
+
+        PerformRegisterCommand = new RelayCommand(_ => PerformRegister(), CanRegister);
+        PerformCancelCommand = new RelayCommand(_ => PerformCancel());
+    }
+
+    // 5) Commands + Execute/CanExecute
     public RelayCommand PerformRegisterCommand { get; }
     public RelayCommand PerformCancelCommand { get; }
 
-    // (add any bindable properties like Username/Password/ConfirmPassword/SelectedCountry here)
-    private string _username;
+    private bool CanRegister(object? _) =>
+        !string.IsNullOrWhiteSpace(Username) &&
+        !string.IsNullOrWhiteSpace(Password) &&
+        !string.IsNullOrWhiteSpace(ConfirmPassword) &&
+        PasswordsMatch &&
+        MeetsPasswordPolicy(Password) && // <-- enforce explicit requirement
+        !string.IsNullOrWhiteSpace(Email) &&
+        string.IsNullOrEmpty(EmailError) &&
+        string.IsNullOrEmpty(UsernameError) &&
+        !string.IsNullOrWhiteSpace(SecurityQuestion) &&
+        !string.IsNullOrWhiteSpace(SecurityAnswer);
+
+    private void PerformRegister() {
+        MessageBox.Show("Performing registration...", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+
+        Username = Username.Trim();
+        Email = Email.Trim();
+        SecurityQuestion = SecurityQuestion.Trim();
+        SecurityAnswer = SecurityAnswer.Trim();
+
+        var newUser = new User(
+            Username,
+            Password,
+            UserRole.User,
+            SelectedCountry,
+            Email,
+            SecurityQuestion,
+            SecurityAnswer
+        );
+
+        _userManager.CreateUser(newUser);
+
+        // For now assume registration succeeded and request close:
+        RequestClose?.Invoke(true);
+    }
+
+    private void PerformCancel() {
+        // Request the view to close and indicate cancellation
+        RequestClose?.Invoke(false);
+    }
+
+    // 6) Bindable state (editable input)
+    private string _username = string.Empty;
     public string Username {
         get { return _username; }
         set {
@@ -35,12 +97,6 @@ public class RegisterWindowViewModel : ViewModelBase {
             _username = value;
             PerformRegisterCommand.RaiseCanExecuteChanged();
         }
-    }
-
-    private string _usernameError;
-    public string UsernameError {
-        get => _usernameError;
-        set => Set(ref _usernameError, value);
     }
 
     private string _password = string.Empty;
@@ -66,7 +122,7 @@ public class RegisterWindowViewModel : ViewModelBase {
         }
     }
 
-    public string _email;
+    private string _email = string.Empty;
     public string Email {
         get { return _email; }
         set {
@@ -77,13 +133,38 @@ public class RegisterWindowViewModel : ViewModelBase {
         }
     }
 
+    private Country _selectedCountry;
+    public Country SelectedCountry {
+        get { return _selectedCountry; }
+        set { _selectedCountry = value; PerformRegisterCommand.RaiseCanExecuteChanged(); }
+    }
+
+    private string _securityQuestion = string.Empty;
+    public string SecurityQuestion {
+        get { return _securityQuestion; }
+        set { _securityQuestion = value; PerformRegisterCommand.RaiseCanExecuteChanged(); }
+    }
+
+    private string _securityAnswer = string.Empty;
+    public string SecurityAnswer {
+        get { return _securityAnswer; }
+        set { _securityAnswer = value; PerformRegisterCommand.RaiseCanExecuteChanged(); }
+    }
+
+    // 7) Validation and error/feedback properties
+    private string _usernameError = string.Empty;
+    public string UsernameError {
+        get => _usernameError;
+        set => Set(ref _usernameError, value);
+    }
+
     private string _emailError = string.Empty;
     public string EmailError {
         get => _emailError;
         set => Set(ref _emailError, value);
     }
 
-    // ===== Password strength bindables used by the XAML meter =====
+    // Password strength bindables used by the XAML meter
     private int _passwordStrengthScore; // 0..4
     public int PasswordStrengthScore {
         get => _passwordStrengthScore;
@@ -97,7 +178,7 @@ public class RegisterWindowViewModel : ViewModelBase {
         }
     }
 
-    private string _passwordStrengthText;
+    private string _passwordStrengthText = string.Empty;
     public string PasswordStrengthText {
         get => _passwordStrengthText;
         private set => Set(ref _passwordStrengthText, value);
@@ -109,13 +190,14 @@ public class RegisterWindowViewModel : ViewModelBase {
         private set => Set(ref _passwordStrengthBrush, value);
     }
 
+    // 8) Derived/computed properties
     // 4-segment bar flags
     public bool PasswordStrengthBar1 => PasswordStrengthScore >= 1;
     public bool PasswordStrengthBar2 => PasswordStrengthScore >= 2;
     public bool PasswordStrengthBar3 => PasswordStrengthScore >= 3;
     public bool PasswordStrengthBar4 => PasswordStrengthScore >= 4;
 
-    // ===== Password match bindables (computed) =====
+    // Password match bindables (computed)
     public bool PasswordsMatch =>
         !string.IsNullOrEmpty(ConfirmPassword) &&
         string.Equals(Password ?? string.Empty, ConfirmPassword ?? string.Empty, StringComparison.Ordinal);
@@ -129,21 +211,17 @@ public class RegisterWindowViewModel : ViewModelBase {
     // Show the message only after user starts typing in Confirm Password
     public bool ShowPasswordMatchMessage => !string.IsNullOrEmpty(ConfirmPassword);
 
+    // 9) Collections
+    public IEnumerable<Country> Countries { get; } =
+        Enum.GetValues(typeof(Country)).Cast<Country>();
+
+    // 10) Private helpers/validation
     private void UpdatePasswordMatch() {
         OnPropertyChanged(nameof(PasswordsMatch));
         OnPropertyChanged(nameof(PasswordMatchMessage));
         OnPropertyChanged(nameof(PasswordMatchBrush));
         OnPropertyChanged(nameof(ShowPasswordMatchMessage));
     }
-
-    // Simple, pragmatic email regex:
-    // - Local part: common characters
-    // - Domain: one or more labels separated by dots, labels can't be empty
-    // - TLD: letters only, at least 2 chars (rejects trailing dot and one-letter TLDs)
-    private static readonly Regex EmailRegex = new(
-        @"^[A-Za-z0-9._%+\-']+@(?:[A-Za-z0-9\-]+\.)+[A-Za-z]{2,}$",
-        RegexOptions.Compiled | RegexOptions.IgnoreCase
-    );
 
     private void ValidateEmailFormat(string value) {
         var email = value?.Trim() ?? string.Empty;
@@ -175,36 +253,6 @@ public class RegisterWindowViewModel : ViewModelBase {
         };
     }
 
-    private Country _selectedCountry;
-    public Country SelectedCountry {
-        get { return _selectedCountry; }
-        set { _selectedCountry = value; PerformRegisterCommand.RaiseCanExecuteChanged(); }
-    }
-
-    public IEnumerable<Country> Countries { get; } =
-        Enum.GetValues(typeof(Country)).Cast<Country>();
-
-    public string _securityQuestion;
-    public string SecurityQuestion {
-        get { return _securityQuestion; }
-        set { _securityQuestion = value; PerformRegisterCommand.RaiseCanExecuteChanged(); }
-    }
-
-    public string _securityAnswer;
-    public string SecurityAnswer {
-        get { return _securityAnswer; }
-        set { _securityAnswer = value; PerformRegisterCommand.RaiseCanExecuteChanged(); }
-    }
-
-    public RegisterWindowViewModel(UserManager userManager, IServiceProvider services, IDialogService dialogService) {
-        _userManager = userManager;
-        _services = services;
-        _dialogService = dialogService;
-
-        PerformRegisterCommand = new RelayCommand(_ => PerformRegister(), CanRegister);
-        PerformCancelCommand = new RelayCommand(_ => PerformCancel());
-    }
-
     // Explicit VG policy: >=8 chars, at least one digit and one special character
     private static bool MeetsPasswordPolicy(string? pwd) {
         var p = pwd ?? string.Empty;
@@ -213,42 +261,5 @@ public class RegisterWindowViewModel : ViewModelBase {
             && p.Any(ch => !char.IsLetterOrDigit(ch));
     }
 
-    private bool CanRegister(object? _) =>
-        !string.IsNullOrWhiteSpace(Username) &&
-        !string.IsNullOrWhiteSpace(Password) &&
-        !string.IsNullOrWhiteSpace(ConfirmPassword) &&
-        PasswordsMatch &&
-        MeetsPasswordPolicy(Password) && // <-- enforce explicit requirement
-        !string.IsNullOrWhiteSpace(Email) &&
-        string.IsNullOrEmpty(EmailError) &&
-        string.IsNullOrEmpty(UsernameError) &&
-        !string.IsNullOrWhiteSpace(SecurityQuestion) &&
-        !string.IsNullOrWhiteSpace(SecurityAnswer);
-
-    private void PerformRegister() {
-        MessageBox.Show("Performing registration...", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
-
-        Username = Username?.Trim();
-        Email = Email?.Trim();
-        SecurityQuestion = SecurityQuestion?.Trim();
-        SecurityAnswer = SecurityAnswer?.Trim();
-        var newUser = new User(
-            Username,
-            Password,
-            UserRole.User,
-            SelectedCountry,
-            Email,
-            SecurityQuestion,
-            SecurityAnswer
-        );
-
-        _userManager.CreateUser(newUser);
-
-        // For now assume registration succeeded and request close:
-        RequestClose?.Invoke(true);
-    }
-    private void PerformCancel() {
-        // Request the view to close and indicate cancellation
-        RequestClose?.Invoke(false);
-    }
+    // 11) Nested types (none)
 }

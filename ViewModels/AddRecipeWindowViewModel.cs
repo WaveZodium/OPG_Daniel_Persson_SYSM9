@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Linq;
+using System.Collections.ObjectModel;
 using System.Windows;
 
 using CookMaster.Managers;
@@ -9,118 +10,18 @@ using CookMaster.Services;
 namespace CookMaster.ViewModels;
 
 public class AddRecipeWindowViewModel : ViewModelBase {
+    // 1) Constants / static
+
+    // 2) Dependencies (injected services/managers)
     private readonly RecipeManager _recipeManager;
     private readonly UserManager _userManager;
     private readonly IDialogService _dialogService;
 
-    // editable copy exposed to the view
-    private Recipe? _recipe;
-    public Recipe? Recipe {
-        get => _recipe;
-        private set {
-            _recipe = value;
-            // populate Ingredients collection from the recipe
-            Ingredients = new ObservableCollection<string>(Recipe?.Ingredients ?? new List<string>());
-            OnPropertyChanged(nameof(Title));
-            OnPropertyChanged(nameof(Instructions));
-            OnPropertyChanged(nameof(Ingredients));
-            OnPropertyChanged(nameof(Category));
-            // update dependent availability flags when recipe changes
-            PerformAddCommand?.RaiseCanExecuteChanged();
-            PerformCancelCommand?.RaiseCanExecuteChanged();
-            AddIngredientCommand?.RaiseCanExecuteChanged();
-            RemoveIngredientCommand?.RaiseCanExecuteChanged();
-        }
-    }
-
-    // Expose enum list for ComboBox
-    public IEnumerable<RecipeCategory> Categories { get; } =
-        Enum.GetValues(typeof(RecipeCategory)).Cast<RecipeCategory>();
-
-    // Bindable wrapper for Category
-    public RecipeCategory Category {
-        get => Recipe?.Category ?? RecipeCategory.Other;
-        set {
-            if (Recipe == null) return;
-            if (Recipe.Category == value) return;
-            Recipe.Category = value;
-            OnPropertyChanged();
-            IsDirty = true;
-        }
-    }
-
-    // Track whether any editable field was changed
-    private bool _isDirty;
-    public bool IsDirty {
-        get => _isDirty;
-        private set {
-            if (Set(ref _isDirty, value)) {
-                // update Save button availability
-                PerformAddCommand?.RaiseCanExecuteChanged();
-            }
-        }
-    }
-
+    // 3) Events
     // Close event for the view (parameter indicates success)
     public event Action<bool>? RequestClose;
 
-    // Expose editable Title as a VM property that updates Recipe and sets IsDirty
-    public string Title {
-        get => Recipe?.Title ?? string.Empty;
-        set {
-            if (Recipe == null) return;
-            if (Recipe.Title == value) return;
-            Recipe.Title = value;
-            OnPropertyChanged();
-            IsDirty = true;
-        }
-    }
-
-    // Ingredients exposed as ObservableCollection for live updates in the ListBox
-    private ObservableCollection<string> _ingredients = new();
-    public ObservableCollection<string> Ingredients {
-        get => _ingredients;
-        private set => Set(ref _ingredients, value);
-    }
-
-    private string? _selectedIngredient;
-    public string? SelectedIngredient {
-        get => _selectedIngredient;
-        set {
-            if (Set(ref _selectedIngredient, value)) {
-                RemoveIngredientCommand?.RaiseCanExecuteChanged();
-            }
-        }
-    }
-
-    private string _newIngredientText = string.Empty;
-    public string NewIngredientText {
-        get => _newIngredientText;
-        set {
-            if (Set(ref _newIngredientText, value)) {
-                AddIngredientCommand?.RaiseCanExecuteChanged();
-            }
-        }
-    }
-
-    public string Instructions {
-        get => Recipe?.Instructions ?? string.Empty;
-        set {
-            if (Recipe == null) return;
-            if (Recipe.Instructions == value) return;
-            Recipe.Instructions = value;
-            OnPropertyChanged();
-            IsDirty = true;
-        }
-    }
-
-    public RelayCommand PerformAddCommand { get; }
-    public RelayCommand PerformCancelCommand { get; }
-
-    // New ingredient add/remove commands
-    public RelayCommand AddIngredientCommand { get; }
-    public RelayCommand RemoveIngredientCommand { get; }
-
+    // 4) Constructors
     public AddRecipeWindowViewModel(RecipeManager recipeManager, UserManager userManager, IDialogService dialogService) {
         _recipeManager = recipeManager;
         _userManager = userManager;
@@ -141,6 +42,12 @@ public class AddRecipeWindowViewModel : ViewModelBase {
         }
         Recipe = new Recipe(string.Empty, new List<string>(), string.Empty, RecipeCategory.Unknown, DateTime.Now, DateTime.Now, owner);
     }
+
+    // 5) Commands + Execute/CanExecute
+    public RelayCommand PerformAddCommand { get; }
+    public RelayCommand PerformCancelCommand { get; }
+    public RelayCommand AddIngredientCommand { get; }
+    public RelayCommand RemoveIngredientCommand { get; }
 
     private bool CanAdd(object? _) =>
         !string.IsNullOrWhiteSpace(Title) &&
@@ -195,4 +102,112 @@ public class AddRecipeWindowViewModel : ViewModelBase {
         // Request the view to close and indicate cancellation
         RequestClose?.Invoke(false);
     }
+
+    // 6) Bindable state (editable input)
+    // editable copy exposed to the view
+    private Recipe? _recipe;
+    public Recipe? Recipe {
+        get => _recipe;
+        private set {
+            _recipe = value;
+            // populate Ingredients collection from the recipe
+            Ingredients = new ObservableCollection<string>(Recipe?.Ingredients ?? new List<string>());
+            OnPropertyChanged(nameof(Title));
+            OnPropertyChanged(nameof(Instructions));
+            OnPropertyChanged(nameof(Ingredients));
+            OnPropertyChanged(nameof(Category));
+            // update dependent availability flags when recipe changes
+            PerformAddCommand?.RaiseCanExecuteChanged();
+            PerformCancelCommand?.RaiseCanExecuteChanged();
+            AddIngredientCommand?.RaiseCanExecuteChanged();
+            RemoveIngredientCommand?.RaiseCanExecuteChanged();
+        }
+    }
+
+    // Bindable wrapper for Category
+    public RecipeCategory Category {
+        get => Recipe?.Category ?? RecipeCategory.Other;
+        set {
+            if (Recipe == null) return;
+            if (Recipe.Category == value) return;
+            Recipe.Category = value;
+            OnPropertyChanged();
+            IsDirty = true;
+        }
+    }
+
+    // Track whether any editable field was changed
+    private bool _isDirty;
+    public bool IsDirty {
+        get => _isDirty;
+        private set {
+            if (Set(ref _isDirty, value)) {
+                // update Save button availability
+                PerformAddCommand?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    // Expose editable Title as a VM property that updates Recipe and sets IsDirty
+    public string Title {
+        get => Recipe?.Title ?? string.Empty;
+        set {
+            if (Recipe == null) return;
+            if (Recipe.Title == value) return;
+            Recipe.Title = value;
+            OnPropertyChanged();
+            IsDirty = true;
+        }
+    }
+
+    // Ingredients exposed as ObservableCollection for live updates in the ListBox
+    private ObservableCollection<string> _ingredients = new();
+    public ObservableCollection<string> Ingredients {
+        get => _ingredients;
+        private set => Set(ref _ingredients, value);
+    }
+
+    private string? _selectedIngredient;
+    public string? SelectedIngredient {
+        get => _selectedIngredient;
+        set {
+            if (Set(ref _selectedIngredient, value)) {
+                RemoveIngredientCommand?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    private string _newIngredientText = string.Empty;
+    public string NewIngredientText {
+        get => _newIngredientText;
+        set {
+            if (Set(ref _newIngredientText, value)) {
+                AddIngredientCommand?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public string Instructions {
+        get => Recipe?.Instructions ?? string.Empty;
+        set {
+            if (Recipe == null) return;
+            if (Recipe.Instructions == value) return;
+            Recipe.Instructions = value;
+            OnPropertyChanged();
+            IsDirty = true;
+        }
+    }
+
+    // 7) Validation and error/feedback properties
+
+    // 8) Derived/computed properties
+
+    // 9) Collections
+    // Expose enum list for ComboBox
+    public IEnumerable<RecipeCategory> Categories { get; } =
+        Enum.GetValues(typeof(RecipeCategory)).Cast<RecipeCategory>();
+
+    // 10) Private helpers/validation
+
+    // 11) Nested types (none)
 }

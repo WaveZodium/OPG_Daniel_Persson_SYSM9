@@ -1,15 +1,8 @@
 using System.Windows;
 
-namespace CookMaster.Services;
+using CookMaster.Services.Contracts;
 
-/// <summary>
-/// Result options for dialogs that offer Save / Discard / Cancel choices.
-/// </summary>
-public enum DialogResultOption {
-    Save,
-    Discard,
-    Cancel
-}
+namespace CookMaster.Services;
 
 /// <summary>
 /// Small dialog service abstraction for showing UI dialogs from viewmodels.

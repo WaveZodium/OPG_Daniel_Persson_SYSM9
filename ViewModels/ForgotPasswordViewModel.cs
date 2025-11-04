@@ -8,16 +8,79 @@ using CookMaster.Services;
 namespace CookMaster.ViewModels
 {
     public class ForgotPasswordViewModel : ViewModelBase {
+        // 1) Constants / static
+
+        // 2) Dependencies (injected services/managers)
         private readonly UserManager _userManager;
 
+        // 3) Events
         // Event used to ask the view to close. Parameter indicates success (true) or cancel/fail (false).
         public event Action<bool>? RequestClose;
 
+        // 4) Constructors
+        public ForgotPasswordViewModel(UserManager userManager) {
+            _userManager = userManager;
+
+            PerformCancelCommand = new RelayCommand(_ => PerformCancel());
+            LoadSecurityQuestionCommand = new RelayCommand(_ => LoadSecurityQuestion());
+            CheckSecurityAnswerCommand = new RelayCommand(_ => CheckSecurityAnswer());
+            PerformUpdatePasswordCommand = new RelayCommand(
+                _ => PerformUpdatePassword(),
+                _ => PasswordsMatch && MeetsPasswordPolicy(NewPassword) // <-- enforce explicit requirement
+            );
+
+            CanEditFields = false;
+            CanEditPassword = false;
+
+            // Request initial focus on the username box (bound to the attached behavior)
+            FocusUsername = true;
+        }
+
+        // 5) Commands + Execute/CanExecute
         public RelayCommand PerformCancelCommand { get; }
         public RelayCommand LoadSecurityQuestionCommand { get; }
         public RelayCommand CheckSecurityAnswerCommand { get; }
         public RelayCommand PerformUpdatePasswordCommand { get; }
 
+        private void CheckSecurityAnswer() {
+            if (User == null) return;
+
+            if (string.Equals(User.SecurityAnswer, SecurityAnswer, StringComparison.Ordinal)) {
+                CanEditPassword = true;
+            } else {
+                CanEditPassword = false;
+                // Optionally expose an error message property for the view
+            }
+        }
+
+        private void LoadSecurityQuestion() {
+            var user = _userManager.FindUser(Username?.Trim() ?? string.Empty);
+
+            if (user != null) {
+                User = user;
+                SecurityQuestion = user.SecurityQuestion;
+                CanEditFields = true;
+            } else {
+                User = null;
+                SecurityQuestion = "User not found.";
+                CanEditFields = false;
+                CanEditPassword = false;
+            }
+        }
+
+        private void PerformUpdatePassword() {
+            if (User == null || !PasswordsMatch || !MeetsPasswordPolicy(NewPassword)) return;
+
+            // Update the user's password and close dialog as success
+            User.SetPassword(NewPassword);
+            RequestClose?.Invoke(true);
+        }
+
+        private void PerformCancel() {
+            RequestClose?.Invoke(false);
+        }
+
+        // 6) Bindable state (editable input)
         private User? _user;
         public User? User {
             get => _user;
@@ -66,27 +129,6 @@ namespace CookMaster.ViewModels
             }
         }
 
-        // ===== Password match bindables (computed) =====
-        public bool PasswordsMatch =>
-            !string.IsNullOrEmpty(ConfirmNewPassword) &&
-            string.Equals(NewPassword ?? string.Empty, ConfirmNewPassword ?? string.Empty, StringComparison.Ordinal);
-
-        public string PasswordMatchMessage =>
-        PasswordsMatch ? "Passwords match" : "Passwords do not match";
-
-        public Brush PasswordMatchBrush =>
-            PasswordsMatch ? Brushes.ForestGreen : Brushes.IndianRed;
-
-        // Show the message only after user starts typing in Confirm Password
-        public bool ShowPasswordMatchMessage => !string.IsNullOrEmpty(ConfirmNewPassword);
-
-        private void UpdatePasswordMatch() {
-            OnPropertyChanged(nameof(PasswordsMatch));
-            OnPropertyChanged(nameof(PasswordMatchMessage));
-            OnPropertyChanged(nameof(PasswordMatchBrush));
-            OnPropertyChanged(nameof(ShowPasswordMatchMessage));
-        }
-
         private string _securityQuestion = string.Empty;
         public string SecurityQuestion {
             get => _securityQuestion;
@@ -113,6 +155,7 @@ namespace CookMaster.ViewModels
             private set => Set(ref _canEditPassword, value);
         }
 
+        // 7) Validation and error/feedback properties
         // ===== Password strength bindables (same shape as Register VM) =====
         private int _passwordStrengthScore; // 0..4
         public int PasswordStrengthScore {
@@ -144,24 +187,24 @@ namespace CookMaster.ViewModels
         public bool PasswordStrengthBar3 => PasswordStrengthScore >= 3;
         public bool PasswordStrengthBar4 => PasswordStrengthScore >= 4;
 
-        public ForgotPasswordViewModel(UserManager userManager) {
-            _userManager = userManager;
+        // 8) Derived/computed properties
+        // ===== Password match bindables (computed) =====
+        public bool PasswordsMatch =>
+            !string.IsNullOrEmpty(ConfirmNewPassword) &&
+            string.Equals(NewPassword ?? string.Empty, ConfirmNewPassword ?? string.Empty, StringComparison.Ordinal);
 
-            PerformCancelCommand = new RelayCommand(_ => PerformCancel());
-            LoadSecurityQuestionCommand = new RelayCommand(_ => LoadSecurityQuestion());
-            CheckSecurityAnswerCommand = new RelayCommand(_ => CheckSecurityAnswer());
-            PerformUpdatePasswordCommand = new RelayCommand(
-                _ => PerformUpdatePassword(),
-                _ => PasswordsMatch && MeetsPasswordPolicy(NewPassword) // <-- enforce explicit requirement
-            );
+        public string PasswordMatchMessage =>
+            PasswordsMatch ? "Passwords match" : "Passwords do not match";
 
-        CanEditFields = false;
-        CanEditPassword = false;
+        public Brush PasswordMatchBrush =>
+            PasswordsMatch ? Brushes.ForestGreen : Brushes.IndianRed;
 
-        // Request initial focus on the username box (bound to the attached behavior)
-        FocusUsername = true;
-        }
+        // Show the message only after user starts typing in Confirm Password
+        public bool ShowPasswordMatchMessage => !string.IsNullOrEmpty(ConfirmNewPassword);
 
+        // 9) Collections
+
+        // 10) Private helpers/validation
         private void UpdatePasswordStrength(string? value) {
             var result = PasswordStrengthService.Evaluate(value ?? string.Empty);
             PasswordStrengthScore = result.Score;
@@ -175,6 +218,13 @@ namespace CookMaster.ViewModels
             };
         }
 
+        private void UpdatePasswordMatch() {
+            OnPropertyChanged(nameof(PasswordsMatch));
+            OnPropertyChanged(nameof(PasswordMatchMessage));
+            OnPropertyChanged(nameof(PasswordMatchBrush));
+            OnPropertyChanged(nameof(ShowPasswordMatchMessage));
+        }
+
         // Explicit VG policy: >=8 chars, at least one digit and one special character
         private static bool MeetsPasswordPolicy(string? pwd) {
             var p = pwd ?? string.Empty;
@@ -183,46 +233,6 @@ namespace CookMaster.ViewModels
                 && p.Any(ch => !char.IsLetterOrDigit(ch));
         }
 
-        private void CheckSecurityAnswer() {
-            if (User == null) return;
-
-            if (string.Equals(User.SecurityAnswer, SecurityAnswer, StringComparison.Ordinal)) {
-                CanEditPassword = true;
-            } else {
-                CanEditPassword = false;
-                // Optionally expose an error message property for the view
-            }
-        }
-
-        private void LoadSecurityQuestion() {
-            var user = _userManager.FindUser(Username?.Trim() ?? string.Empty);
-
-            if (user != null) {
-                User = user;
-                SecurityQuestion = user.SecurityQuestion;
-                CanEditFields = true;
-            } else {
-                User = null;
-                SecurityQuestion = "User not found.";
-                CanEditFields = false;
-                CanEditPassword = false;
-                // Optionally clear entered fields
-                // SecurityAnswer = string.Empty;
-                // NewPassword = string.Empty;
-                // ConfirmPassword = string.Empty;
-            }
-        }
-
-        private void PerformUpdatePassword() {
-            if (User == null || !PasswordsMatch || !MeetsPasswordPolicy(NewPassword)) return;
-
-            // Update the user's password and close dialog as success
-            User.SetPassword(NewPassword);
-            RequestClose?.Invoke(true);
-        }
-
-        private void PerformCancel() {
-            RequestClose?.Invoke(false);
-        }
+        // 11) Nested types (none)
     }
 }

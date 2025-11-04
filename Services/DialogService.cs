@@ -1,6 +1,7 @@
 using System.Windows;
 
-using CookMaster.Views;
+using CookMaster.Dialogs;
+using CookMaster.Services.Contracts;
 
 namespace CookMaster.Services;
 

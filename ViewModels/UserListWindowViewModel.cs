@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Linq;
+using System.Collections.ObjectModel;
 using System.Windows;
 
 using CookMaster.Managers;
@@ -12,37 +13,18 @@ using Microsoft.Extensions.DependencyInjection;
 namespace CookMaster.ViewModels;
 
 public class UserListWindowViewModel : ViewModelBase {
+    // 1) Constants / static
+
+    // 2) Dependencies (injected services/managers)
     private readonly UserManager _userManager;
     private readonly IServiceProvider _services;
     private readonly IDialogService _dialogService;
 
+    // 3) Events
     // Close event for the view (nullable: true = success, false = explicit failure, null = just close (like X) )
     public event Action<bool?>? RequestClose;
 
-    // Expose an ObservableCollection so the UI receives collection change notifications
-    private ObservableCollection<User> _users = new();
-    public ObservableCollection<User> Users {
-        get => _users;
-        private set => Set(ref _users, value);
-    }
-
-    public RelayCommand PerformAddUserCommand { get; }
-    public RelayCommand PerformViewUserCommand { get; }
-    public RelayCommand PerformDeleteUserCommand { get; }
-    public RelayCommand PerformCloseCommand { get; }
-
-    private User? _selectedUser;
-    public User? SelectedUser {
-        get => _selectedUser;
-        set {
-            if (Set(ref _selectedUser, value)) {
-                // Notify that the command's ability to execute may have changed
-                PerformViewUserCommand?.RaiseCanExecuteChanged();
-                PerformDeleteUserCommand?.RaiseCanExecuteChanged();
-            }
-        }
-    }
-
+    // 4) Constructors
     public UserListWindowViewModel(UserManager userManager, IServiceProvider services, IDialogService dialogService) {
         _userManager = userManager;
         _services = services;
@@ -57,10 +39,11 @@ public class UserListWindowViewModel : ViewModelBase {
         PerformCloseCommand = new RelayCommand(_ => CloseWindow());
     }
 
-    private void RefreshUsers() {
-        Users = new ObservableCollection<User>(_userManager.GetAllUsers());
-        Users.Remove(_userManager.GetLoggedIn()!);
-    }
+    // 5) Commands + Execute/CanExecute
+    public RelayCommand PerformAddUserCommand { get; }
+    public RelayCommand PerformViewUserCommand { get; }
+    public RelayCommand PerformDeleteUserCommand { get; }
+    public RelayCommand PerformCloseCommand { get; }
 
     public void CloseWindow() {
         // Invoke with null to indicate "just close" (same behavior as clicking the X)
@@ -130,4 +113,38 @@ public class UserListWindowViewModel : ViewModelBase {
             }
         }
     }
+
+    // 6) Bindable state (editable input)
+    // Expose an ObservableCollection so the UI receives collection change notifications
+    private ObservableCollection<User> _users = new();
+    public ObservableCollection<User> Users {
+        get => _users;
+        private set => Set(ref _users, value);
+    }
+
+    private User? _selectedUser;
+    public User? SelectedUser {
+        get => _selectedUser;
+        set {
+            if (Set(ref _selectedUser, value)) {
+                // Notify that the command's ability to execute may have changed
+                PerformViewUserCommand?.RaiseCanExecuteChanged();
+                PerformDeleteUserCommand?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    // 7) Validation and error/feedback properties
+
+    // 8) Derived/computed properties
+
+    // 9) Collections
+
+    // 10) Private helpers/validation
+    private void RefreshUsers() {
+        Users = new ObservableCollection<User>(_userManager.GetAllUsers());
+        Users.Remove(_userManager.GetLoggedIn()!);
+    }
+
+    // 11) Nested types (none)
 }

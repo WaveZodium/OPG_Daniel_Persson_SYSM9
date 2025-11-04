@@ -1,15 +1,20 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Linq;
+using System.Collections.ObjectModel;
 using System.Windows;
 
 using CookMaster.Managers;
 using CookMaster.Models;
 using CookMaster.MVVM;
 using CookMaster.Services;
+using CookMaster.Services.Contracts;
 using CookMaster.Views;
 
 namespace CookMaster.ViewModels;
 
 public class RecipeDetailWindowViewModel : ViewModelBase {
+    // 1) Constants / static
+
+    // 2) Dependencies (injected services/managers)
     private readonly RecipeManager _recipeManager;
     private readonly UserManager _userManager;
     private readonly IDialogService _dialogService;
@@ -17,144 +22,11 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
     // the original source recipe (not edited directly)
     private readonly Recipe? _sourceRecipe;
 
-    // editable copy exposed to the view
-    private Recipe? _recipe;
-    public Recipe? Recipe {
-        get => _recipe;
-        private set {
-            _recipe = value;
-            OnPropertyChanged(nameof(Title));
-            OnPropertyChanged(nameof(Instructions));
-            OnPropertyChanged(nameof(Ingredients));
-            OnPropertyChanged(nameof(Category));
-            // keep Owner selection in sync with the recipe copy
-            OnPropertyChanged(nameof(Owner));
-            // update dependent availability flags when recipe changes
-            UpdateOwnerOrAdmin();
-            PerformSaveCommand?.RaiseCanExecuteChanged();
-            PerformDeleteCommand?.RaiseCanExecuteChanged();
-        }
-    }
-
-    // Expose enum list for ComboBox
-    public IEnumerable<RecipeCategory> Categories { get; } =
-        Enum.GetValues(typeof(RecipeCategory)).Cast<RecipeCategory>();
-
-    // Bindable wrapper for Category
-    public RecipeCategory Category {
-        get => Recipe?.Category ?? RecipeCategory.Other;
-        set {
-            if (Recipe == null) return;
-            if (Recipe.Category == value) return;
-            Recipe.Category = value;
-            OnPropertyChanged();
-            IsDirty = true;
-        }
-    }
-
-    // Track whether any editable field was changed
-    private bool _isDirty;
-    public bool IsDirty {
-        get => _isDirty;
-        private set {
-            if (Set(ref _isDirty, value)) {
-                // update Save button availability
-                PerformSaveCommand?.RaiseCanExecuteChanged();
-            }
-        }
-    }
-
+    // 3) Events
     // Close event for the view (parameter indicates success)
     public event Action<bool>? RequestClose;
 
-    // Whether current user is owner OR admin (affects Save/Delete availability)
-    private bool _isOwnerOrAdmin;
-    public bool IsOwnerOrAdmin {
-        get => _isOwnerOrAdmin;
-        private set {
-            if (Set(ref _isOwnerOrAdmin, value)) {
-                // update Save and Delete command availability when this changes
-                PerformSaveCommand?.RaiseCanExecuteChanged();
-                PerformDeleteCommand?.RaiseCanExecuteChanged();
-            }
-        }
-    }
-
-    // Expose editable Title as a VM property that updates Recipe and sets IsDirty
-    public string Title {
-        get => Recipe?.Title ?? string.Empty;
-        set {
-            if (Recipe == null) return;
-            if (Recipe.Title == value) return;
-            Recipe.Title = value;
-            OnPropertyChanged();
-            IsDirty = true;
-        }
-    }
-
-    private ObservableCollection<string> _ingredients = new();
-    public ObservableCollection<string> Ingredients {
-        get => _ingredients;
-        private set => Set(ref _ingredients, value);
-    }
-
-    private string? _selectedIngredient;
-    public string? SelectedIngredient {
-        get => _selectedIngredient;
-        set {
-            if (Set(ref _selectedIngredient, value)) {
-                RemoveIngredientCommand?.RaiseCanExecuteChanged();
-            }
-        }
-    }
-
-    private string _newIngredientText = string.Empty;
-    public string NewIngredientText {
-        get => _newIngredientText;
-        set {
-            if (Set(ref _newIngredientText, value)) {
-                AddIngredientCommand?.RaiseCanExecuteChanged();
-            }
-        }
-    }
-
-    public string Instructions {
-        get => Recipe?.Instructions ?? string.Empty;
-        set {
-            if (Recipe == null) return;
-            if (Recipe.Instructions == value) return;
-            Recipe.Instructions = value;
-            OnPropertyChanged();
-            IsDirty = true;
-        }
-    }
-
-    // All users from UserManager
-    public IEnumerable<User> Users => _userManager.Users;
-
-    // Backing field for owner selection in the editable copy
-    private User _owner;
-    public User Owner {
-        get => _owner;
-        set {
-            if (_owner == value) return;
-            _owner = value;
-            OnPropertyChanged();
-            // mark dirty so Save becomes available (admins can change owner selection in the UI)
-            IsDirty = true;
-        }
-    }
-
-    // Visible only when current user is admin (used by the Owner label/combobox)
-    public bool IsAdmin => _userManager.IsAdmin;
-
-    public RelayCommand PerformSaveCommand { get; }
-    public RelayCommand PerformDeleteCommand { get; }
-    public RelayCommand PerformCloseCommand { get; }
-
-    public RelayCommand AddIngredientCommand { get; }
-    public RelayCommand RemoveIngredientCommand { get; }
-
+    // 4) Constructors
     public RecipeDetailWindowViewModel(
         RecipeManager recipeManager,
         UserManager userManager,
@@ -182,10 +54,12 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         RemoveIngredientCommand = new RelayCommand(_ => RemoveIngredient(), _ => SelectedIngredient != null);
     }
 
-    private void UpdateOwnerOrAdmin() {
-        var current = _userManager.GetLoggedIn();
-        IsOwnerOrAdmin = _userManager.IsAdmin || current?.Id == Recipe?.Owner?.Id;
-    }
+    // 5) Commands + Execute/CanExecute
+    public RelayCommand PerformSaveCommand { get; }
+    public RelayCommand PerformDeleteCommand { get; }
+    public RelayCommand PerformCloseCommand { get; }
+    public RelayCommand AddIngredientCommand { get; }
+    public RelayCommand RemoveIngredientCommand { get; }
 
     private void AddIngredient() {
         var text = NewIngredientText?.Trim();
@@ -271,4 +145,145 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
             RequestClose?.Invoke(true);
         }
     }
+
+    // 6) Bindable state (editable input)
+    // editable copy exposed to the view
+    private Recipe? _recipe;
+    public Recipe? Recipe {
+        get => _recipe;
+        private set {
+            _recipe = value;
+            OnPropertyChanged(nameof(Title));
+            OnPropertyChanged(nameof(Instructions));
+            OnPropertyChanged(nameof(Ingredients));
+            OnPropertyChanged(nameof(Category));
+            // keep Owner selection in sync with the recipe copy
+            OnPropertyChanged(nameof(Owner));
+            // update dependent availability flags when recipe changes
+            UpdateOwnerOrAdmin();
+            PerformSaveCommand?.RaiseCanExecuteChanged();
+            PerformDeleteCommand?.RaiseCanExecuteChanged();
+        }
+    }
+
+    // Bindable wrapper for Category
+    public RecipeCategory Category {
+        get => Recipe?.Category ?? RecipeCategory.Other;
+        set {
+            if (Recipe == null) return;
+            if (Recipe.Category == value) return;
+            Recipe.Category = value;
+            OnPropertyChanged();
+            IsDirty = true;
+        }
+    }
+
+    // Track whether any editable field was changed
+    private bool _isDirty;
+    public bool IsDirty {
+        get => _isDirty;
+        private set {
+            if (Set(ref _isDirty, value)) {
+                // update Save button availability
+                PerformSaveCommand?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    // Expose editable Title as a VM property that updates Recipe and sets IsDirty
+    public string Title {
+        get => Recipe?.Title ?? string.Empty;
+        set {
+            if (Recipe == null) return;
+            if (Recipe.Title == value) return;
+            Recipe.Title = value;
+            OnPropertyChanged();
+            IsDirty = true;
+        }
+    }
+
+    private ObservableCollection<string> _ingredients = new();
+    public ObservableCollection<string> Ingredients {
+        get => _ingredients;
+        private set => Set(ref _ingredients, value);
+    }
+
+    private string? _selectedIngredient;
+    public string? SelectedIngredient {
+        get => _selectedIngredient;
+        set {
+            if (Set(ref _selectedIngredient, value)) {
+                RemoveIngredientCommand?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    private string _newIngredientText = string.Empty;
+    public string NewIngredientText {
+        get => _newIngredientText;
+        set {
+            if (Set(ref _newIngredientText, value)) {
+                AddIngredientCommand?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public string Instructions {
+        get => Recipe?.Instructions ?? string.Empty;
+        set {
+            if (Recipe == null) return;
+            if (Recipe.Instructions == value) return;
+            Recipe.Instructions = value;
+            OnPropertyChanged();
+            IsDirty = true;
+        }
+    }
+
+    // Backing field for owner selection in the editable copy
+    private User _owner;
+    public User Owner {
+        get => _owner;
+        set {
+            if (_owner == value) return;
+            _owner = value;
+            OnPropertyChanged();
+            // mark dirty so Save becomes available (admins can change owner selection in the UI)
+            IsDirty = true;
+        }
+    }
+
+    // 7) Validation and error/feedback properties
+
+    // 8) Derived/computed properties
+    // Visible only when current user is admin (used by the Owner label/combobox)
+    public bool IsAdmin => _userManager.IsAdmin;
+
+    // Whether current user is owner OR admin (affects Save/Delete availability)
+    private bool _isOwnerOrAdmin;
+    public bool IsOwnerOrAdmin {
+        get => _isOwnerOrAdmin;
+        private set {
+            if (Set(ref _isOwnerOrAdmin, value)) {
+                // update Save and Delete command availability when this changes
+                PerformSaveCommand?.RaiseCanExecuteChanged();
+                PerformDeleteCommand?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    // 9) Collections
+    // Expose enum list for ComboBox
+    public IEnumerable<RecipeCategory> Categories { get; } =
+        Enum.GetValues(typeof(RecipeCategory)).Cast<RecipeCategory>();
+
+    // All users from UserManager
+    public IEnumerable<User> Users => _userManager.Users;
+
+    // 10) Private helpers/validation
+    private void UpdateOwnerOrAdmin() {
+        var current = _userManager.GetLoggedIn();
+        IsOwnerOrAdmin = _userManager.IsAdmin || current?.Id == Recipe?.Owner?.Id;
+    }
+
+    // 11) Nested types (none)
 }
