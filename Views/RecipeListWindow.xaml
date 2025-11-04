@@ -70,12 +70,16 @@
                     Command="{Binding OpenAddRecipeWindowCommand}" 
                     Style="{StaticResource ButtonLightGrayStyle}"/>
             <Button Content="View Recipe" Width="160" Height="30" Margin="0,4"
-                    Command="{Binding OpenRecipeDetailWindowCommand}" 
                     ToolTip="View details of the selected recipe"
+                    Command="{Binding OpenRecipeDetailWindowCommand}" 
                     Style="{StaticResource ButtonLightGrayStyle}"/>
+            <Button Content="Delete Recipe" Width="160" Height="30" Margin="4"
+                    ToolTip="Delete this recipe"
+                    Command="{Binding PerformDeleteCommand}" 
+                    Style="{StaticResource ButtonDangerStyle}"/>
             <Button Content="List Users" Width="160" Height="30" Margin="0,4"
-                    Command="{Binding OpenUserListWindowCommand}"
                     ToolTip="View the list of users"
+                    Command="{Binding OpenUserListWindowCommand}"
                     Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"
                     Style="{StaticResource ButtonBlueStyle}"/>
         </StackPanel>

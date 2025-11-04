@@ -8,6 +8,9 @@ public class UserDetailWindowViewModel : ViewModelBase {
     private readonly UserManager _userManager;
     private readonly IServiceProvider _services;
 
+    // Keep original reference so we can copy edits back on Save
+    private User? _originalUser;
+
     // Close event for the view (parameter indicates success)
     public event Action<bool>? RequestClose;
 
@@ -37,20 +40,30 @@ public class UserDetailWindowViewModel : ViewModelBase {
 
     // Called by the caller (UserListWindowViewModel) to provide the selected user.
     public void LoadUser(User user) {
-        // Optionally create a copy if you want edits to be cancellable.
-        // For now we pass the instance through so the UI binds directly.
-        User = user;
+        // Create a copy so edits are cancellable
+        _originalUser = user;
+        User = _userManager.CopyUser(user);
     }
 
     private void PerformSave() {
-        // Persist changes if needed (UserManager APIs can be used here)
+        // Copy edited values back to the original
+        if (_originalUser != null && User != null) {
+            _originalUser.Username = User.Username;
+            _originalUser.Role = User.Role;
+            _originalUser.Country = User.Country;
+            _originalUser.Email = User.Email;
+            _originalUser.SecurityQuestion = User.SecurityQuestion;
+            _originalUser.SecurityAnswer = User.SecurityAnswer;
+            // Use SetPassword to keep future hashing changes centralized
+            _originalUser.SetPassword(User.Password);
+        }
+
         // Request the view to close and indicate success
         RequestClose?.Invoke(true);
     }
 
     private void PerformClose() {
-        // Request the view to close and indicate cancellation
-        // which in this case is that no changes were saved.
+        // Discard the copy by just closing without copying back
         RequestClose?.Invoke(false);
     }
 }

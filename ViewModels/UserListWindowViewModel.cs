@@ -88,7 +88,12 @@ public class UserListWindowViewModel : ViewModelBase {
         // Ensure window is using the VM instance we just prepared
         window.DataContext = vm;
 
-        window.ShowDialog();
+        var result = window.ShowDialog();
+
+        if (result == true) {
+            // After the dialog closes, refresh the user list to reflect any changes
+            RefreshUsers();
+        }
     }
 
     private void PerformDeleteUser() {

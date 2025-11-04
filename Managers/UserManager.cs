@@ -80,6 +80,23 @@ public class UserManager {
     // convenience alias if you prefer a property instead of GetLoggedIn()
     public User? CurrentUser => _loggedInUser;
 
+    // Creates a detached copy of a user (preserves concrete type)
+    public User CopyUser(User u) {
+        if (u is AdminUser admin) {
+            var copyAdmin = new AdminUser(admin.Username, admin.Password, admin.Country, admin.Email, admin.SecurityQuestion, admin.SecurityAnswer) {
+                Id = admin.Id,
+                CreatedAt = admin.CreatedAt
+            };
+            return copyAdmin;
+        }
+
+        var copy = new User(u.Username, u.Password, u.Role, u.Country, u.Email, u.SecurityQuestion, u.SecurityAnswer) {
+            Id = u.Id,
+            CreatedAt = u.CreatedAt
+        };
+        return copy;
+    }
+
     // ===== seeding =====
     // Idempotent seeding of required default accounts (users only)
     public void SeedDefaults() {

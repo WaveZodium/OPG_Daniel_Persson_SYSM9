@@ -4,6 +4,7 @@ using System.Windows;
 using CookMaster.Managers;
 using CookMaster.Models;
 using CookMaster.MVVM;
+using CookMaster.Services;
 using CookMaster.Views;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,7 @@ public class RecipeListWindowViewModel : ViewModelBase {
     private readonly RecipeManager _recipeManager;
     private readonly UserManager _userManager;
     private readonly IServiceProvider _services;
+    private readonly IDialogService _dialogService;
 
     private ObservableCollection<Recipe> _recipes = new();
     public ObservableCollection<Recipe> Recipes {
@@ -26,8 +28,12 @@ public class RecipeListWindowViewModel : ViewModelBase {
         get => _selectedRecipe;
         set {
             if (Set(ref _selectedRecipe, value)) {
-                // Notify that the command's ability to execute may have changed
+                // Recompute owner/admin whenever selection changes
+                UpdateOwnerOrAdmin();
+
+                // Notify that command availability may have changed
                 OpenRecipeDetailWindowCommand?.RaiseCanExecuteChanged();
+                PerformDeleteCommand?.RaiseCanExecuteChanged();
             }
         }
     }
@@ -53,16 +59,30 @@ public class RecipeListWindowViewModel : ViewModelBase {
         private set => Set(ref _isAdmin, value);
     }
 
+    // Whether current user is owner OR admin (affects Save/Delete availability)
+    private bool _isOwnerOrAdmin;
+    public bool IsOwnerOrAdmin {
+        get => _isOwnerOrAdmin;
+        private set {
+            if (Set(ref _isOwnerOrAdmin, value)) {
+                // update Delete command availability when this changes
+                PerformDeleteCommand?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
     public RelayCommand TryLogoutCommand { get; }
     public RelayCommand OpenMainWindowCommand { get; }
     public RelayCommand OpenAddRecipeWindowCommand { get; }
     public RelayCommand OpenRecipeDetailWindowCommand { get; }
+    public RelayCommand PerformDeleteCommand { get; }
     public RelayCommand OpenUserListWindowCommand { get; }
 
-    public RecipeListWindowViewModel(RecipeManager recipeManager, UserManager userManager, IServiceProvider services) {
+    public RecipeListWindowViewModel(RecipeManager recipeManager, UserManager userManager, IDialogService dialogService, IServiceProvider services) {
         _recipeManager = recipeManager;
         _userManager = userManager;
         _services = services;
+        _dialogService = dialogService; // FIX: assign dialog service
 
         // initialize logged-in user display from UserManager
         var logged = _userManager.GetLoggedIn();
@@ -73,17 +93,28 @@ public class RecipeListWindowViewModel : ViewModelBase {
         if (IsAdmin) { Recipes = new ObservableCollection<Recipe>(_recipeManager.GetAllRecipes()); }
         else { Recipes = new ObservableCollection<Recipe>(_recipeManager.GetByOwner(_userManager.CurrentUser)); }
 
+        // initialize owner/admin state for current selection (if any)
+        UpdateOwnerOrAdmin();
+
         OpenMainWindowCommand = new RelayCommand(_ => OpenMainWindow());
         OpenAddRecipeWindowCommand = new RelayCommand(_ => OpenAddRecipeWindow());
 
         // canExecute checks selection
         OpenRecipeDetailWindowCommand = new RelayCommand(_ => OpenRecipeDetailWindow(), _ => SelectedRecipe != null);
 
+        // CanExecute for delete depends on selection AND owner/admin
+        PerformDeleteCommand = new RelayCommand(_ => PerformDelete(), _ => SelectedRecipe != null && IsOwnerOrAdmin);
+
         OpenUserListWindowCommand = new RelayCommand(_ => OpenUserListWindow());
         TryLogoutCommand = new RelayCommand(_ => {
             _userManager.SignOut();
             OpenMainWindow();
         });
+    }
+
+    private void UpdateOwnerOrAdmin() {
+        var current = _userManager.GetLoggedIn();
+        IsOwnerOrAdmin = _userManager.IsAdmin || (current != null && SelectedRecipe?.Owner?.Id == current.Id);
     }
 
     private void OpenMainWindow() {
@@ -117,6 +148,8 @@ public class RecipeListWindowViewModel : ViewModelBase {
         if (dialogResult == true) {
             if (IsAdmin) { Recipes = new ObservableCollection<Recipe>(_recipeManager.GetAllRecipes()); }
             else { Recipes = new ObservableCollection<Recipe>(_recipeManager.GetByOwner(_userManager.CurrentUser)); }
+            // selection may have changed -> recompute
+            UpdateOwnerOrAdmin();
         }
     }
 
@@ -143,6 +176,7 @@ public class RecipeListWindowViewModel : ViewModelBase {
         if (dialogResult == true) {
             if (IsAdmin) { Recipes = new ObservableCollection<Recipe>(_recipeManager.GetAllRecipes()); }
             else { Recipes = new ObservableCollection<Recipe>(_recipeManager.GetByOwner(_userManager.CurrentUser)); }
+            UpdateOwnerOrAdmin();
         }
     }
 
@@ -171,6 +205,24 @@ public class RecipeListWindowViewModel : ViewModelBase {
                 current.Show();
                 current.Activate();
             }
+        }
+    }
+
+    private void PerformDelete() {
+        if (!IsOwnerOrAdmin || _selectedRecipe == null) return;
+
+        // Use dialog service instead of MessageBox
+        var owner = Application.Current?.Windows.OfType<RecipeDetailWindow>().FirstOrDefault() ?? Application.Current?.MainWindow;
+        var confirm = _dialogService.ShowDeleteConfirmationDialog(owner);
+
+        // If dialog wasn't shown or closed unexpectedly, do nothing
+        if (!confirm.HasValue) return;
+
+        if (confirm.Value) {
+            _recipeManager.RemoveRecipe(_selectedRecipe);
+            _selectedRecipe = null;
+            if (IsAdmin) { Recipes = new ObservableCollection<Recipe>(_recipeManager.GetAllRecipes()); }
+            else { Recipes = new ObservableCollection<Recipe>(_recipeManager.GetByOwner(_userManager.CurrentUser)); }
         }
     }
 }
