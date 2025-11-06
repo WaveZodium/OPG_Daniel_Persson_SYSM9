@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:CookMaster"
         xmlns:behaviors="clr-namespace:CookMaster.Behaviors"
         mc:Ignorable="d"
-        Title="CookMaster" Height="450" Width="800"
+        Title="CookMaster" Height="510" Width="500"
         WindowStartupLocation="CenterScreen"
         Style="{StaticResource {x:Type Window}}">
 
@@ -35,6 +35,28 @@
             <TextBlock FontSize="12" HorizontalAlignment="Center" TextAlignment="Center" Margin="3">
                 <Hyperlink Command="{Binding ForgotPasswordCommand}">Forgot password?</Hyperlink>
             </TextBlock>
+
+            <StackPanel Margin="0 12 0 0">
+                <TextBlock Text="2FA Code:" FontWeight="DemiBold"/>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                <TextBox Text="{Binding TwoFactorCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                         Margin="3, 0, 3, 3" Padding="3"
+                         Style="{StaticResource RoundedTextBoxStyle}"
+                         behaviors:EnterKeyBehavior.EnterKeyCommand="{Binding TrySignInCommand}" />
+                    <Button Content="Send Code" Command="{Binding SendTwoFactorCodeCommand}" 
+                            Width="80" Height="25" Margin="6,0,0,0" Grid.Column="1"
+                            ToolTip="Send 2FA Code"
+                            Style="{StaticResource ButtonLightGrayStyle}"/>
+                </Grid>
+                
+                
+                
+            </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0 21 0 0" HorizontalAlignment="Center">
                 <Button Content="Sign In" Command="{Binding TrySignInCommand}" 

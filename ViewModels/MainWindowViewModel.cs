@@ -30,6 +30,7 @@ public class MainWindowViewModel : ViewModelBase {
         OpenRecipeListWindowCommand = new RelayCommand(_ => OpenRecipeListWindow());
         OpenRegisterWindowCommand = new RelayCommand(_ => OpenRegisterWindow());
         ForgotPasswordCommand = new RelayCommand(_ => ForgotPassword());
+        SendTwoFactorCodeCommand = new RelayCommand(_ => SendTwoFactorCode());
 
         // Request initial focus on the username box (bound to the attached behavior)
         FocusUsername = true;
@@ -40,6 +41,7 @@ public class MainWindowViewModel : ViewModelBase {
     public RelayCommand OpenRecipeListWindowCommand { get; }
     public RelayCommand OpenRegisterWindowCommand { get; }
     public RelayCommand ForgotPasswordCommand { get; }
+    public RelayCommand SendTwoFactorCodeCommand { get; }
 
     private void TrySignIn() {
         // Use bound properties from the view
@@ -47,11 +49,17 @@ public class MainWindowViewModel : ViewModelBase {
         var password = Password ?? string.Empty;
 
         if (_userManager.SignIn(username, password)) {
-            // Successful login; open recipe list window
-            Username = string.Empty;
-            Password = string.Empty;
 
-            OpenRecipeListWindow();
+            if (GeneratedTwoFactorCode != TwoFactorCode) {
+                MessageBox.Show("Login failed. Please check your 2FA code.", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            else {
+                // Successful login; open recipe list window
+                Username = string.Empty;
+                Password = string.Empty;
+
+                OpenRecipeListWindow();
+            }
         }
         else {
             // Failed login; show message box (in real app, use better UI feedback)
@@ -148,6 +156,34 @@ public class MainWindowViewModel : ViewModelBase {
         }
     }
 
+    private void SendTwoFactorCode() {
+        // Find and hide current window so the dialog appears modally on top
+        var current = GetActiveWindow();
+        current?.Hide();
+
+        try {
+            using var scope = _services.CreateScope();
+            var window = scope.ServiceProvider.GetRequiredService<CodeWindow>();
+
+            if (current != null)
+                window.Owner = current;
+
+            // Blocks until the code window closes (Copy & Close sets DialogResult and closes)
+            var result = window.ShowDialog();
+
+            // If user clicked "Copy & Close", capture the code from the VM
+            if (result == true && window.DataContext is CodeWindowViewModel vm) {
+                GeneratedTwoFactorCode = vm.Code;
+            }
+        }
+        finally {
+            if (current != null) {
+                current.Show();
+                current.Activate();
+            }
+        }
+    }
+
     // 6) Bindable state (editable input)
     private string _username = string.Empty;
     public string Username {
@@ -175,6 +211,19 @@ public class MainWindowViewModel : ViewModelBase {
     public bool FocusUsername {
         get => _focusUsername;
         set => Set(ref _focusUsername, value);
+    }
+
+    // Holds the last generated two-factor code returned by CodeWindow
+    private string? _twoFactorCode;
+    public string? TwoFactorCode {
+        get => _twoFactorCode;
+        set => Set(ref _twoFactorCode, value);
+    }
+
+    private string? _generatedTwoFactorCode;
+    public string? GeneratedTwoFactorCode {
+        get => _generatedTwoFactorCode;
+        set => Set(ref _generatedTwoFactorCode, value);
     }
 
     // 7) Validation and error/feedback properties
