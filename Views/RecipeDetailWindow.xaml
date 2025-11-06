@@ -1,7 +1,7 @@
 ﻿<Window x:Class="CookMaster.Views.RecipeDetailWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="CookMaster - Recipe Details" Height="560" Width="800"
+        Title="CookMaster - Recipe Details" Height="600" Width="800"
         WindowStartupLocation="CenterOwner"
         Style="{StaticResource {x:Type Window}}">
     <Grid Margin="8">
@@ -48,6 +48,9 @@
               HorizontalScrollBarVisibility="Disabled"
               CanContentScroll="True">
             <StackPanel>
+                <TextBlock Text="Created" Margin="4" FontWeight="DemiBold"/>
+                <TextBlock Text="{Binding Created, StringFormat=\{0:yyyy-MM-dd HH:mm\}}" Margin="4"/>
+
                 <TextBlock Text="Title" Margin="4"/>
                 <TextBox Margin="4"
                      Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>

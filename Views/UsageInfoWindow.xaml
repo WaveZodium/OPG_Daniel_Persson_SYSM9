@@ -1,0 +1,44 @@
+﻿<Window x:Class="CookMaster.Views.UsageInfoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CookMaster.Views"
+        xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
+        mc:Ignorable="d"
+        Title="CookMaster - Usage Information" Height="600" Width="900"
+        WindowStartupLocation="CenterOwner"
+        Style="{StaticResource {x:Type Window}}">
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
+            <Image Source="{StaticResource SteamingPotImage}" HorizontalAlignment="Center"
+                   Width="30" Height="30" Stretch="Uniform" Margin="0,0,0,0"/>
+            <TextBlock Text="Usage Information" FontSize="20" FontWeight="Bold" Margin="4" />
+        </StackPanel>
+
+        <!-- Right column: buttons -->
+        <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="3" Margin="4,0,0,0">
+            <Button Content="Close" Width="160" Height="30" Margin="4"
+                    ToolTip="Close without saving changes"
+                    Command="{Binding PerformCloseCommand}"
+                    Style="{StaticResource ButtonLightGrayStyle}"/>
+        </StackPanel>
+
+        <!-- Left column: usage information -->
+        <FlowDocumentReader Grid.Row="2" Grid.Column="0"
+                            ScrollViewer.VerticalScrollBarVisibility="Visible"
+                            Document="{Binding UsageInfoDocument}"
+                            IsFindEnabled="True" Zoom="100" />
+    </Grid>
+</Window>

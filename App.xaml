@@ -9,6 +9,7 @@
                 
                 <!-- make the SteamingPot drawing available everywhere -->
                 <ResourceDictionary Source="Resources/SteamingPot.xaml"/>
+                <ResourceDictionary Source="Resources/InfoIcon.xaml"/>
                 <ResourceDictionary Source="Resources/LogoutIcon.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

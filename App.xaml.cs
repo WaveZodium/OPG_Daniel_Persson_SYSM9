@@ -81,6 +81,9 @@ public partial class App : Application {
         services.AddTransient<UserDetailWindowViewModel>();
         services.AddTransient<UserDetailWindow>();
 
+        services.AddTransient<UsageInfoWindowViewModel>();
+        services.AddTransient<UsageInfoWindow>();
+
         // Factory: create a RecipeDetailWindowViewModel given a runtime Recipe.
         services.AddTransient<Func<Recipe, RecipeDetailWindowViewModel>>(sp => recipe
             => ActivatorUtilities.CreateInstance<RecipeDetailWindowViewModel>(sp, recipe));

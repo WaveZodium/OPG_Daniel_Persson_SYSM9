@@ -60,6 +60,7 @@
                   Height="auto" Margin="0,0,0,0"
                   IsReadOnly="True">
                 <DataGrid.Columns>
+                    <DataGridTextColumn Header="Created" Binding="{Binding Created, StringFormat=\{0:yyyy-MM-dd HH:mm\}}" Width="*"/>
                     <DataGridTextColumn Header="Recipe Name" Binding="{Binding Title}" Width="*"/>
                     <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="*"/>
                     <DataGridTextColumn Header="Owner" Binding="{Binding Owner.Username}" Width="*"/>
@@ -86,6 +87,24 @@
                     Command="{Binding OpenUserListWindowCommand}"
                     Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"
                     Style="{StaticResource ButtonBlueStyle}"/>
+
+            <StackPanel Orientation="Horizontal" Height="36" Margin="0,30,0,0"
+                        ToolTip="Usage Information"
+                        Cursor="Hand"
+                        Focusable="True">
+                <StackPanel.InputBindings>
+                    <MouseBinding MouseAction="LeftClick"
+                                  Command="{Binding OpenUsageInfoWindowCommand}" />
+                </StackPanel.InputBindings>
+                <Image Source="{StaticResource InfoIcon}"
+                       Width="36" Height="36"
+                       Stretch="Uniform"
+                       VerticalAlignment="Center">
+                </Image>
+                <TextBlock Text="Usage Information"
+                           Margin="8,0,0,0"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Window>

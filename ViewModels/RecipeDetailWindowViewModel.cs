@@ -52,6 +52,8 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
 
         AddIngredientCommand = new RelayCommand(_ => AddIngredient(), _ => !string.IsNullOrWhiteSpace(NewIngredientText));
         RemoveIngredientCommand = new RelayCommand(_ => RemoveIngredient(), _ => SelectedIngredient != null);
+
+        MessageBox.Show($"Created: {Recipe?.Created}", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     // 5) Commands + Execute/CanExecute
@@ -98,7 +100,6 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
             MessageBox.Show("Cannot save changes: source recipe is missing.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
-
     private void PerformClose() {
         if (IsDirty && IsOwnerOrAdmin) {
             // Ask dialog service instead of constructing dialog here
@@ -129,7 +130,6 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
             RequestClose?.Invoke(false);
         }
     }
-
     private void PerformDelete() {
         if (!IsOwnerOrAdmin || _sourceRecipe == null) return;
 
@@ -188,6 +188,10 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
                 PerformSaveCommand?.RaiseCanExecuteChanged();
             }
         }
+    }
+
+    public string Created {
+        get => Recipe?.Created.ToString("g") ?? string.Empty;
     }
 
     // Expose editable Title as a VM property that updates Recipe and sets IsDirty

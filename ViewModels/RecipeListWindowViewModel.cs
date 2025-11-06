@@ -88,6 +88,8 @@ public class RecipeListWindowViewModel : ViewModelBase {
                 LoggedInUserName = current != null ? current.Username : "(not signed in)";
             }
         });
+
+        OpenUsageInfoWindowCommand = new RelayCommand(_ => OpenUsageInfoWindow()); // init
     }
 
     // 5) Commands + Execute/CanExecute
@@ -98,6 +100,7 @@ public class RecipeListWindowViewModel : ViewModelBase {
     public RelayCommand PerformDeleteCommand { get; }
     public RelayCommand OpenUserListWindowCommand { get; }
     public RelayCommand OpenUserDetailsCommand { get; }
+    public RelayCommand OpenUsageInfoWindowCommand { get; } // add this
 
     private void OpenMainWindow() {
         // Signal: true => go back to login (logout flow)
@@ -178,6 +181,18 @@ public class RecipeListWindowViewModel : ViewModelBase {
             _selectedRecipe = null;
             UpdateRecipesList();
         }
+    }
+
+    private void OpenUsageInfoWindow() {
+        var owner = Application.Current?.Windows.OfType<RecipeListWindow>().FirstOrDefault();
+
+        using var scope = _services.CreateScope();
+        var window = scope.ServiceProvider.GetRequiredService<UsageInfoWindow>();
+
+        if (owner != null)
+            window.Owner = owner;
+
+        window.ShowDialog();
     }
 
     // 6) Bindable state (editable input)
