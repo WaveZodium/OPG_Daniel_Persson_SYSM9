@@ -1,7 +1,7 @@
 ﻿<Window x:Class="CookMaster.Views.AddRecipeWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="CookMaster - Add New Recipe" Height="620" Width="800"
+        Title="CookMaster - Add New Recipe" Height="530" Width="800"
         WindowStartupLocation="CenterOwner"
         Style="{StaticResource {x:Type Window}}">
     <Grid Margin="8">
