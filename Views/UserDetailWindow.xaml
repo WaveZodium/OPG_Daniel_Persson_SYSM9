@@ -44,31 +44,62 @@
               HorizontalScrollBarVisibility="Disabled"
               CanContentScroll="True">
             <StackPanel>
-                <TextBlock Text="Username" Margin="4"/>
-                <TextBox Margin="4"
-                     Text="{Binding User.Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Text="Username" Margin="4" FontWeight="DemiBold"/>
 
-                <TextBlock Text="Email" Margin="4"/>
+                <!-- Editable for admins -->
                 <TextBox Margin="4"
-                     Text="{Binding User.Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                         Text="{Binding User.Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsAdmin}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
 
-                <TextBlock Text="Country" Margin="4"/>
+                <!-- Read-only display for non-admins -->
+                <TextBlock Margin="4"
+                           Text="{Binding User.Username}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsAdmin}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <TextBlock Text="Email" Margin="4,12,4,4" FontWeight="DemiBold"/>
+                <TextBox Margin="4"
+                         Text="{Binding User.Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                <TextBlock Text="Country" Margin="4,12,4,4" FontWeight="DemiBold"/>
                 <ComboBox Margin="4"
-                      ItemsSource="{Binding Countries}"
-                      SelectedItem="{Binding User.Country, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                          ItemsSource="{Binding Countries}"
+                          SelectedItem="{Binding User.Country, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-                <TextBlock Text="Security Question" Margin="4"/>
+                <TextBlock Text="Security Question" Margin="4,12,4,4" FontWeight="DemiBold"/>
                 <TextBox Margin="4"
-                     Text="{Binding User.SecurityQuestion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                         Text="{Binding User.SecurityQuestion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-                <TextBlock Text="Security Answer" Margin="4"/>
+                <TextBlock Text="Security Answer" Margin="4,12,4,4" FontWeight="DemiBold"/>
                 <TextBox Margin="4"
-                     Text="{Binding User.SecurityAnswer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                         Text="{Binding User.SecurityAnswer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-                <TextBlock Text="Role" Margin="4"/>
-                <ComboBox Margin="4"
-                      ItemsSource="{Binding Roles}"
-                      SelectedItem="{Binding User.Role, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <!-- Hide Role for non-admins -->
+                <StackPanel Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="Role" Margin="4,12,4,4" FontWeight="DemiBold"/>
+                    <ComboBox Margin="4"
+                              ItemsSource="{Binding Roles}"
+                              SelectedItem="{Binding User.Role, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
             </StackPanel>
         </ScrollViewer>
     </Grid>

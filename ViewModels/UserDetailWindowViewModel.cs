@@ -33,7 +33,12 @@ public class UserDetailWindowViewModel : ViewModelBase {
         // Copy edited values back to the original
         if (_originalUser != null && User != null) {
             _originalUser.Username = User.Username;
-            _originalUser.Role = User.Role;
+
+            // Only admins can change Role
+            if (IsAdmin) {
+                _originalUser.Role = User.Role;
+            }
+
             _originalUser.Country = User.Country;
             _originalUser.Email = User.Email;
             _originalUser.SecurityQuestion = User.SecurityQuestion;
@@ -62,6 +67,7 @@ public class UserDetailWindowViewModel : ViewModelBase {
     // 7) Validation and error/feedback properties
 
     // 8) Derived/computed properties
+    public bool IsAdmin => _userManager.IsAdmin;
 
     // 9) Collections
     public IEnumerable<Country> Countries { get; } =

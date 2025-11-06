@@ -56,6 +56,38 @@ public class RecipeListWindowViewModel : ViewModelBase {
             _userManager.SignOut();
             OpenMainWindow();
         });
+
+        OpenUserDetailsCommand = new RelayCommand(_ => {
+            /*var owner = GetActiveWindow();
+            using var scope = _services.CreateScope();
+            var window = scope.ServiceProvider.GetRequiredService<UserDetailWindow>();
+            if (owner != null)
+                window.Owner = owner;
+            window.ShowDialog();*/
+
+            // open user detail window and pass the selected user to its VM
+            using var scope = _services.CreateScope();
+            var window = scope.ServiceProvider.GetRequiredService<Views.UserDetailWindow>();
+
+            // Prefer the window's DataContext if it already is the expected VM instance,
+            // otherwise resolve a VM from the scope and assign it as the DataContext.
+            var vm = window.DataContext as UserDetailWindowViewModel
+                     ?? scope.ServiceProvider.GetRequiredService<UserDetailWindowViewModel>();
+
+            // Provide the selected user to the detail VM
+            vm.LoadUser(_userManager.CurrentUser);
+
+            // Ensure window is using the VM instance we just prepared
+            window.DataContext = vm;
+
+            var result = window.ShowDialog();
+
+            if (result == true) {
+                // After the dialog closes, refresh the user list to reflect any changes
+                var current = _userManager.GetLoggedIn();
+                LoggedInUserName = current != null ? current.Username : "(not signed in)";
+            }
+        });
     }
 
     // 5) Commands + Execute/CanExecute
@@ -65,6 +97,7 @@ public class RecipeListWindowViewModel : ViewModelBase {
     public RelayCommand OpenRecipeDetailWindowCommand { get; }
     public RelayCommand PerformDeleteCommand { get; }
     public RelayCommand OpenUserListWindowCommand { get; }
+    public RelayCommand OpenUserDetailsCommand { get; }
 
     private void OpenMainWindow() {
         // Signal: true => go back to login (logout flow)

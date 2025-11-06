@@ -33,7 +33,11 @@
         
             <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center">
                 <TextBlock Text="Logged in as:" Margin="0,0,0,3" />
-                <TextBlock Text="{Binding LoggedInUserName}" FontWeight="Bold" />
+                <TextBlock FontWeight="Bold">
+                    <Hyperlink Command="{Binding OpenUserDetailsCommand}" ToolTip="View your details">
+                        <Run Text="{Binding LoggedInUserName}" />
+                    </Hyperlink>
+                </TextBlock>
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="8,0,0,0">
                 <!-- Icon button that triggers logout; icon color changes on hover.
