@@ -49,15 +49,13 @@ public class MainWindowViewModel : ViewModelBase {
         var password = Password ?? string.Empty;
 
         if (_userManager.SignIn(username, password)) {
-
-            if (GeneratedTwoFactorCode != TwoFactorCode) {
+            if (GeneratedTwoFactorCode != TwoFactorCode || GeneratedTwoFactorCode == string.Empty) {
                 MessageBox.Show("Login failed. Please check your 2FA code.", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             else {
                 // Successful login; open recipe list window
                 Username = string.Empty;
                 Password = string.Empty;
-
                 OpenRecipeListWindow();
             }
         }
@@ -214,13 +212,13 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     // Holds the last generated two-factor code returned by CodeWindow
-    private string? _twoFactorCode;
+    private string _twoFactorCode = string.Empty;
     public string? TwoFactorCode {
         get => _twoFactorCode;
         set => Set(ref _twoFactorCode, value);
     }
 
-    private string? _generatedTwoFactorCode;
+    private string _generatedTwoFactorCode = string.Empty;
     public string? GeneratedTwoFactorCode {
         get => _generatedTwoFactorCode;
         set => Set(ref _generatedTwoFactorCode, value);
