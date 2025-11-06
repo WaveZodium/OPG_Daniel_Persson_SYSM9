@@ -8,6 +8,7 @@ using CookMaster.MVVM;
 using CookMaster.Services;
 using CookMaster.Services.Contracts;
 using CookMaster.Views;
+using Microsoft.Extensions.DependencyInjection; // + for ActivatorUtilities/CreateScope
 
 namespace CookMaster.ViewModels;
 
@@ -18,6 +19,7 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
     private readonly RecipeManager _recipeManager;
     private readonly UserManager _userManager;
     private readonly IDialogService _dialogService;
+    private readonly IServiceProvider _services; // + needed to open Add window
 
     // the original source recipe (not edited directly)
     private readonly Recipe? _sourceRecipe;
@@ -31,10 +33,12 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         RecipeManager recipeManager,
         UserManager userManager,
         IDialogService dialogService,
+        IServiceProvider services,          // + inject services
         Recipe sourceRecipe) {
         _recipeManager = recipeManager;
         _userManager = userManager;
         _dialogService = dialogService;
+        _services = services;               // +
         _sourceRecipe = sourceRecipe;
         _owner = sourceRecipe.Owner!;
 
@@ -56,6 +60,9 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         // Ingredient commands depend on edit mode too
         AddIngredientCommand = new RelayCommand(_ => AddIngredient(), _ => IsEditing && !string.IsNullOrWhiteSpace(NewIngredientText));
         RemoveIngredientCommand = new RelayCommand(_ => RemoveIngredient(), _ => IsEditing && SelectedIngredient != null);
+
+        // + Copy command is always available when there is a source recipe
+        CopyRecipeCommand = new RelayCommand(_ => OpenCopyRecipeWindow(), _ => _sourceRecipe != null);
     }
 
     // 5) Commands + Execute/CanExecute
@@ -65,6 +72,7 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
     public RelayCommand PerformEditCommand { get; }
     public RelayCommand AddIngredientCommand { get; }
     public RelayCommand RemoveIngredientCommand { get; }
+    public RelayCommand CopyRecipeCommand { get; } // +
 
     private void AddIngredient() {
         var text = NewIngredientText?.Trim();
@@ -96,6 +104,11 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
             Recipe.Owner = Owner;
 
             _sourceRecipe.EditRecipe(Recipe.Title, Recipe.Ingredients, Recipe.Instructions, Recipe.Category, Recipe.Owner);
+
+            // sync the Updated timestamp from the source and notify UI
+            Recipe.Updated = _sourceRecipe.Updated;
+            OnPropertyChanged(nameof(Updated));
+
             IsDirty = false;
             RequestClose?.Invoke(true);
         }
@@ -153,6 +166,34 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         IsEditing = !IsEditing;
     }
 
+    // + Opens AddRecipeWindow prefilled with the current recipe as template
+    private void OpenCopyRecipeWindow() {
+        if (_sourceRecipe == null) return;
+
+        // Find the recipe list window to use as owner and to refresh later
+        var listWindow = Application.Current?.Windows.OfType<RecipeListWindow>().FirstOrDefault()
+                         ?? Application.Current?.MainWindow;
+
+        // Close this detail window without triggering a list refresh
+        RequestClose?.Invoke(false);
+
+        using var scope = _services.CreateScope();
+
+        // Create the Add VM seeded with the current recipe and host it in the Add window
+        var addVm = ActivatorUtilities.CreateInstance<AddRecipeWindowViewModel>(scope.ServiceProvider, _sourceRecipe);
+        var addWindow = ActivatorUtilities.CreateInstance<AddRecipeWindow>(scope.ServiceProvider, addVm);
+
+        // Set owner to the list window if found
+        if (listWindow != null) addWindow.Owner = listWindow;
+
+        var result = addWindow.ShowDialog();
+
+        // After a successful add, refresh the list
+        if (result == true && listWindow is Window lw && lw.DataContext is RecipeListWindowViewModel listVm) {
+            listVm.RefreshRecipes();
+        }
+    }
+
     // 6) Bindable state (editable input)
     // editable copy exposed to the view
     private Recipe? _recipe;
@@ -166,6 +207,9 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
             OnPropertyChanged(nameof(Category));
             // keep Owner selection in sync with the recipe copy
             OnPropertyChanged(nameof(Owner));
+            // also update Created/Updated labelss
+            OnPropertyChanged(nameof(Created));
+            OnPropertyChanged(nameof(Updated));
             // update dependent availability flags when recipe changes
             UpdateOwnerOrAdmin();
             PerformSaveCommand?.RaiseCanExecuteChanged();
@@ -213,8 +257,15 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
 
     public string EditButtonText => IsEditing ? "Stop Editing" : "Edit";
 
-    public string Created {
-        get => Recipe?.Created.ToString("g") ?? string.Empty;
+    public string Created => Recipe?.Created.ToLocalTime().ToString("g") ?? string.Empty;
+
+    public string Updated {
+        get {
+            if (Recipe == null) return string.Empty;
+            return Recipe.Created == Recipe.Updated
+                ? "-"
+                : Recipe.Updated.ToLocalTime().ToString("g");
+        }
     }
 
     // Expose editable Title as a VM property that updates Recipe and sets IsDirty

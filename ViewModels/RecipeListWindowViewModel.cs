@@ -280,7 +280,7 @@ public class RecipeListWindowViewModel : ViewModelBase {
 
     // 9) Collections
 
-    // 10) Private helpers/validation
+    // 10) Helpers/validation
     private void UpdateOwnerOrAdmin() {
         var current = _userManager.GetLoggedIn();
         IsOwnerOrAdmin = _userManager.IsAdmin || (current != null && SelectedRecipe?.Owner?.Id == current.Id);
@@ -294,6 +294,11 @@ public class RecipeListWindowViewModel : ViewModelBase {
             if (_userManager.CurrentUser != null)
                 Recipes = new ObservableCollection<Recipe>(_recipeManager.GetByOwner(_userManager.CurrentUser));
         }
+    }
+
+    public void RefreshRecipes() {
+        UpdateRecipesList();
+        UpdateOwnerOrAdmin();
     }
 
     // 11) Nested types (none)

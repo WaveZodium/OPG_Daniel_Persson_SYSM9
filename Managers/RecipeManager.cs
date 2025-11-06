@@ -51,32 +51,34 @@ public class RecipeManager {
         var user = _userManager.FindUser("user");
         if (user == null) return;
 
+        DateTime now = DateTime.Now;
+
         if (!RecipeExists("Pancakes")) {
-            AddRecipe(new Recipe("Pancakes", new List<string> { "Flour", "Eggs", "Milk" }, "Mix and fry", RecipeCategory.Breakfast, DateTime.Now, DateTime.Now, user));
+            AddRecipe(new Recipe("Pancakes", new List<string> { "Flour", "Eggs", "Milk" }, "Mix and fry", RecipeCategory.Breakfast, now, now, user));
         }
 
         if (!RecipeExists("Pasta Carbonara")) {
-            AddRecipe(new Recipe("Pasta Carbonara", new List<string> { "Pasta", "Eggs", "Parmesan cheese" }, "Cook pasta and mix with eggs and cheese", RecipeCategory.MainCourse, DateTime.Now, DateTime.Now, user));
+            AddRecipe(new Recipe("Pasta Carbonara", new List<string> { "Pasta", "Eggs", "Parmesan cheese" }, "Cook pasta and mix with eggs and cheese", RecipeCategory.MainCourse, now, now, user));
         }
         if (!RecipeExists("Spaghetti Bolognese")) {
             // seed more recipes as user2
-            AddRecipe(new Recipe("Spaghetti Bolognese", new List<string> { "Spaghetti", "Ground beef", "Tomato sauce" }, "Cook spaghetti and prepare sauce", RecipeCategory.MainCourse, DateTime.Now, DateTime.Now, user));
+            AddRecipe(new Recipe("Spaghetti Bolognese", new List<string> { "Spaghetti", "Ground beef", "Tomato sauce" }, "Cook spaghetti and prepare sauce", RecipeCategory.MainCourse, now, now, user));
         }
         if (!RecipeExists("Chicken Curry")) {
-            AddRecipe(new Recipe("Chicken Curry", new List<string> { "Chicken", "Curry powder", "Coconut milk" }, "Cook chicken and simmer in curry sauce", RecipeCategory.MainCourse, DateTime.Now, DateTime.Now, user));
+            AddRecipe(new Recipe("Chicken Curry", new List<string> { "Chicken", "Curry powder", "Coconut milk" }, "Cook chicken and simmer in curry sauce", RecipeCategory.MainCourse, now, now, user));
         }
 
         var user2 = _userManager.FindUser("user2");
 
         if (user2 != null && !RecipeExists("Caesar Salad")) {
-            AddRecipe(new Recipe("Caesar Salad", new List<string> { "Lettuce", "Croutons", "Caesar dressing" }, "Toss ingredients together", RecipeCategory.Salad, DateTime.Now, DateTime.Now, user2));
+            AddRecipe(new Recipe("Caesar Salad", new List<string> { "Lettuce", "Croutons", "Caesar dressing" }, "Toss ingredients together", RecipeCategory.Salad, now, now, user2));
             // seed more recipes as user2
         }
         if (user2 != null && !RecipeExists("Tomato Soup")) {
-            AddRecipe(new Recipe("Tomato Soup", new List<string> { "Tomatoes", "Onion", "Garlic", "Vegetable broth" }, "Cook and blend ingredients", RecipeCategory.Soup, DateTime.Now, DateTime.Now, user2));
+            AddRecipe(new Recipe("Tomato Soup", new List<string> { "Tomatoes", "Onion", "Garlic", "Vegetable broth" }, "Cook and blend ingredients", RecipeCategory.Soup, now, now, user2));
         }
         if (user2 != null && !RecipeExists("Grilled Cheese Sandwich")) {
-            AddRecipe(new Recipe("Grilled Cheese Sandwich", new List<string> { "Bread", "Cheese", "Butter" }, "Assemble and grill the sandwich", RecipeCategory.Snack, DateTime.Now, DateTime.Now, user2));
+            AddRecipe(new Recipe("Grilled Cheese Sandwich", new List<string> { "Bread", "Cheese", "Butter" }, "Assemble and grill the sandwich", RecipeCategory.Snack, now, now, user2));
         }
 
 

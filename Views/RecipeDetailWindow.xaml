@@ -1,7 +1,7 @@
 ﻿<Window x:Class="CookMaster.Views.RecipeDetailWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="CookMaster - Recipe Details" Height="600" Width="800"
+        Title="CookMaster - Recipe Details" Height="620" Width="800"
         WindowStartupLocation="CenterOwner"
         Style="{StaticResource {x:Type Window}}">
     <Grid Margin="8">
@@ -34,13 +34,15 @@
                     Command="{Binding PerformSaveCommand}"
                     Visibility="{Binding IsOwnerOrAdmin, Converter={StaticResource BoolToVis}}"
                     Style="{StaticResource ButtonSaveStyle}"/>
+            <Button Content="Copy" Margin="4,0,0,0"
+                    ToolTip="Create a copy of this recipe"
+                    Command="{Binding CopyRecipeCommand}" />
             <!-- Visible to admin OR the recipe owner -->
             <Button Content="Delete" Width="160" Height="30" Margin="4"
                     ToolTip="Delete this recipe"
                     Command="{Binding PerformDeleteCommand}" 
                     Visibility="{Binding IsOwnerOrAdmin, Converter={StaticResource BoolToVis}}"
                     Style="{StaticResource ButtonDangerStyle}"/>
-
             <Button Content="Close" Width="160" Height="30" Margin="4"
                     ToolTip="Close without saving changes"
                     Command="{Binding PerformCloseCommand}"
@@ -53,15 +55,28 @@
               HorizontalScrollBarVisibility="Disabled"
               CanContentScroll="True">
             <StackPanel>
-                <TextBlock Text="Created" Margin="4" FontWeight="DemiBold"/>
-                <TextBlock Text="{Binding Created, StringFormat=\{0:yyyy-MM-dd HH:mm\}}" Margin="4"/>
+                <Grid Margin="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Created" Margin="0,4,4,4" FontWeight="DemiBold"/>
+                        <TextBlock Text="{Binding Created, StringFormat=\{0:yyyy-MM-dd HH:mm:ss\}}" Margin="0,4,4,4"/>
+                    </StackPanel>
 
-                <TextBlock Text="Title" Margin="4"/>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Grid.Column="1" Text="Updated" Margin="0,4,4,4" FontWeight="DemiBold"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Updated, StringFormat=\{0:yyyy-MM-dd HH:mm:ss\}}" Margin="0,4,4,4"/>
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="Title" Margin="4" FontWeight="DemiBold"/>
                 <TextBox Margin="4"
                          IsEnabled="{Binding IsEditing}"
                          Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-                <TextBlock Text="Ingredients" Margin="4"/>
+                <TextBlock Text="Ingredients" Margin="4" FontWeight="DemiBold"/>
                 <ListBox ItemsSource="{Binding Ingredients}"
                          SelectedItem="{Binding SelectedIngredient}"
                          IsEnabled="{Binding IsEditing}"
@@ -81,7 +96,7 @@
                             Command="{Binding RemoveIngredientCommand}"/>
                 </StackPanel>
 
-                <TextBlock Text="Instructions" Margin="4"/>
+                <TextBlock Text="Instructions" Margin="4" FontWeight="DemiBold"/>
                 <TextBox Margin="4" Height="100"
                          IsEnabled="{Binding IsEditing}"
                          Text="{Binding Instructions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -89,14 +104,14 @@
                          TextWrapping="Wrap"
                          VerticalScrollBarVisibility="Auto"/>
 
-                <TextBlock Text="Category" Margin="4"/>
+                <TextBlock Text="Category" Margin="4" FontWeight="DemiBold"/>
                 <ComboBox Margin="4"
                           IsEnabled="{Binding IsEditing}"
                           ItemsSource="{Binding Categories}"
                           SelectedItem="{Binding Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
                 <!-- Owner (visible only to admin) -->
-                <TextBlock Text="Owner" Margin="4" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
+                <TextBlock Text="Owner" Margin="4" FontWeight="DemiBold" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
                 <ComboBox Margin="4"
                           ItemsSource="{Binding Users}"
                           SelectedItem="{Binding Owner, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

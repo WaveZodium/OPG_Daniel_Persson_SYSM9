@@ -42,7 +42,8 @@ public class AddRecipeWindowViewModel : ViewModelBase {
             PerformCancel();
             return;
         }
-        Recipe = new Recipe(string.Empty, new List<string>(), string.Empty, RecipeCategory.Unknown, DateTime.Now, DateTime.Now, owner);
+        var now = DateTime.UtcNow;
+        Recipe = new Recipe(string.Empty, new List<string>(), string.Empty, RecipeCategory.Unknown, now, now    , owner);
     }
 
     // Overload that seeds from an existing recipe (used by Copy action)
@@ -89,13 +90,13 @@ public class AddRecipeWindowViewModel : ViewModelBase {
     }
 
     private void PerformAdd() {
-        if (_recipe == null || string.IsNullOrWhiteSpace(Title) || string.IsNullOrWhiteSpace(Instructions)) {
+        if (string.IsNullOrWhiteSpace(Title) ||
+            Ingredients == null || Ingredients.Count < 1 ||
+            string.IsNullOrWhiteSpace(Instructions) ||
+            Category == RecipeCategory.Unknown) {
             MessageBox.Show("Cannot add recipe: recipe data is missing.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }
-
-        // convert ingredients collection back to List<string> for the model
-        var ingredients = Ingredients?.ToList() ?? new List<string>();
 
         var owner = _userManager.CurrentUser;
         if (owner == null) {
@@ -103,9 +104,22 @@ public class AddRecipeWindowViewModel : ViewModelBase {
             PerformCancel();
             return;
         }
-        Recipe!.EditRecipe(Title, ingredients, Instructions, Category, owner);
 
-        _recipeManager.AddRecipe(Recipe);
+        var ingredients = Ingredients.ToList();
+
+        // Ensure Created/Updated are set at the moment of adding, not when the window opened or template was applied
+        var now = DateTime.UtcNow;
+        var newRecipe = new Recipe(
+            Title.Trim(),
+            ingredients,
+            Instructions,
+            Category,
+            now,
+            now,
+            owner
+        );
+
+        _recipeManager.AddRecipe(newRecipe);
 
         IsDirty = false;
         RequestClose?.Invoke(true);
@@ -256,13 +270,14 @@ public class AddRecipeWindowViewModel : ViewModelBase {
         var title = (template.Title ?? string.Empty).Trim();
         title = $"{title} (copy)";
 
+        var now = DateTime.UtcNow;
         Recipe = new Recipe(
             title,
             new List<string>(template.Ingredients ?? new List<string>()),
             template.Instructions ?? string.Empty,
             template.Category,
-            DateTime.Now,
-            DateTime.Now,
+            now,
+            now,
             owner
         );
         IsDirty = true;
