@@ -24,6 +24,11 @@
 
         <!-- Right column: buttons -->
         <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="3" Margin="4,0,0,0">
+            <Button Content="{Binding EditButtonText}" Width="160" Height="30" Margin="4"
+                    ToolTip="Edit this recipe"
+                    Command="{Binding PerformEditCommand}"
+                    Visibility="{Binding IsOwnerOrAdmin, Converter={StaticResource BoolToVis}}"
+                    Style="{StaticResource ButtonLightGrayStyle}"/>
             <Button Content="Save &amp; Close" Width="160" Height="30" Margin="4" 
                     ToolTip="Save changes and close the window"
                     Command="{Binding PerformSaveCommand}"
@@ -53,41 +58,51 @@
 
                 <TextBlock Text="Title" Margin="4"/>
                 <TextBox Margin="4"
-                     Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                         IsEnabled="{Binding IsEditing}"
+                         Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
                 <TextBlock Text="Ingredients" Margin="4"/>
-                <ListBox ItemsSource="{Binding Ingredients}" SelectedItem="{Binding SelectedIngredient}" Height="100" Margin="4"/>
+                <ListBox ItemsSource="{Binding Ingredients}"
+                         SelectedItem="{Binding SelectedIngredient}"
+                         IsEnabled="{Binding IsEditing}"
+                         Height="100" Margin="4"/>
 
                 <!-- Add / Remove controls -->
                 <StackPanel Orientation="Horizontal" Margin="4">
                     <TextBox Width="300" Margin="0,0,4,0"
-             Text="{Binding NewIngredientText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                             IsEnabled="{Binding IsEditing}"
+                             Text="{Binding NewIngredientText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     <Button Content="Add" Width="80"
-            Command="{Binding AddIngredientCommand}"
-            Margin="0,0,4,0"/>
+                            IsEnabled="{Binding IsEditing}"
+                            Command="{Binding AddIngredientCommand}"
+                            Margin="0,0,4,0"/>
                     <Button Content="Remove" Width="80"
-            Command="{Binding RemoveIngredientCommand}"/>
+                            IsEnabled="{Binding IsEditing}"
+                            Command="{Binding RemoveIngredientCommand}"/>
                 </StackPanel>
 
                 <TextBlock Text="Instructions" Margin="4"/>
                 <TextBox Margin="4" Height="100"
-                     Text="{Binding Instructions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                     AcceptsReturn="True"
-                     TextWrapping="Wrap"
-                     VerticalScrollBarVisibility="Auto"/>
+                         IsEnabled="{Binding IsEditing}"
+                         Text="{Binding Instructions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"/>
 
                 <TextBlock Text="Category" Margin="4"/>
                 <ComboBox Margin="4"
-                      ItemsSource="{Binding Categories}"
-                      SelectedItem="{Binding Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                          IsEnabled="{Binding IsEditing}"
+                          ItemsSource="{Binding Categories}"
+                          SelectedItem="{Binding Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
                 <!-- Owner (visible only to admin) -->
                 <TextBlock Text="Owner" Margin="4" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
                 <ComboBox Margin="4"
-                      ItemsSource="{Binding Users}"
-                      SelectedItem="{Binding Owner, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                      DisplayMemberPath="Username"
-                      Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
+                          ItemsSource="{Binding Users}"
+                          SelectedItem="{Binding Owner, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          DisplayMemberPath="Username"
+                          Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"
+                          IsEnabled="{Binding IsEditing}"/>
             </StackPanel>
         </ScrollViewer>
     </Grid>

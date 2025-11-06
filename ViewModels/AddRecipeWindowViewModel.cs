@@ -33,6 +33,8 @@ public class AddRecipeWindowViewModel : ViewModelBase {
         AddIngredientCommand = new RelayCommand(_ => AddIngredient(), _ => !string.IsNullOrWhiteSpace(NewIngredientText));
         RemoveIngredientCommand = new RelayCommand(_ => RemoveIngredient(), _ => SelectedIngredient != null);
 
+        LoadTemplates();
+
         // Initialize a new empty recipe
         var owner = userManager.CurrentUser;
         if (owner == null) {
@@ -41,6 +43,17 @@ public class AddRecipeWindowViewModel : ViewModelBase {
             return;
         }
         Recipe = new Recipe(string.Empty, new List<string>(), string.Empty, RecipeCategory.Unknown, DateTime.Now, DateTime.Now, owner);
+    }
+
+    // Overload that seeds from an existing recipe (used by Copy action)
+    public AddRecipeWindowViewModel(RecipeManager recipeManager, UserManager userManager, IDialogService dialogService, Recipe baseRecipe)
+        : this(recipeManager, userManager, dialogService) {
+        if (baseRecipe != null) {
+            ApplyTemplate(baseRecipe);
+            // Optional: if the base recipe exists in the template list, reflect selection
+            var match = TemplateRecipes.FirstOrDefault(r => r.Id == baseRecipe.Id);
+            if (match != null) SelectedTemplate = match;
+        }
     }
 
     // 5) Commands + Execute/CanExecute
@@ -198,6 +211,21 @@ public class AddRecipeWindowViewModel : ViewModelBase {
         }
     }
 
+    // Template selection
+    public ObservableCollection<Recipe> TemplateRecipes { get; } = new();
+
+    private Recipe? _selectedTemplate;
+    public Recipe? SelectedTemplate {
+        get => _selectedTemplate;
+        set {
+            if (Set(ref _selectedTemplate, value)) {
+                if (value != null) {
+                    ApplyTemplate(value);
+                }
+            }
+        }
+    }
+
     // 7) Validation and error/feedback properties
 
     // 8) Derived/computed properties
@@ -208,6 +236,37 @@ public class AddRecipeWindowViewModel : ViewModelBase {
         Enum.GetValues(typeof(RecipeCategory)).Cast<RecipeCategory>();
 
     // 10) Private helpers/validation
+    private void LoadTemplates() {
+        IEnumerable<Recipe> source =
+            _userManager.IsAdmin
+                ? _recipeManager.GetAllRecipes()
+                : (_userManager.CurrentUser != null
+                    ? _recipeManager.GetByOwner(_userManager.CurrentUser)
+                    : Enumerable.Empty<Recipe>());
+
+        TemplateRecipes.Clear();
+        foreach (var r in source)
+            TemplateRecipes.Add(r);
+    }
+
+    private void ApplyTemplate(Recipe template) {
+        var owner = _userManager.CurrentUser;
+        if (owner == null) return;
+
+        var title = (template.Title ?? string.Empty).Trim();
+        title = $"{title} (copy)";
+
+        Recipe = new Recipe(
+            title,
+            new List<string>(template.Ingredients ?? new List<string>()),
+            template.Instructions ?? string.Empty,
+            template.Category,
+            DateTime.Now,
+            DateTime.Now,
+            owner
+        );
+        IsDirty = true;
+    }
 
     // 11) Nested types (none)
 }

@@ -74,10 +74,14 @@
                     ToolTip="Add a new recipe"
                     Command="{Binding OpenAddRecipeWindowCommand}" 
                     Style="{StaticResource ButtonLightGrayStyle}"/>
-            <Button Content="View Recipe" Width="160" Height="30" Margin="0,4"
-                    ToolTip="View details of the selected recipe"
-                    Command="{Binding OpenRecipeDetailWindowCommand}" 
+            <Button Content="Copy Recipe" Width="160" Height="30" Margin="0,4"
+                    ToolTip="Copy the selected recipe"
+                    Command="{Binding OpenCopyRecipeWindowCommand}" 
                     Style="{StaticResource ButtonLightGrayStyle}"/>
+            <Button Content="View Recipe" Width="160" Height="30" Margin="0,4"
+        ToolTip="View details of the selected recipe"
+        Command="{Binding OpenRecipeDetailWindowCommand}" 
+        Style="{StaticResource ButtonLightGrayStyle}"/>
             <Button Content="Delete Recipe" Width="160" Height="30" Margin="4"
                     ToolTip="Delete this recipe"
                     Command="{Binding PerformDeleteCommand}" 

@@ -50,16 +50,19 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         // CanExecute for delete depends on owner/admin
         PerformDeleteCommand = new RelayCommand(_ => PerformDelete(), _ => IsOwnerOrAdmin);
 
-        AddIngredientCommand = new RelayCommand(_ => AddIngredient(), _ => !string.IsNullOrWhiteSpace(NewIngredientText));
-        RemoveIngredientCommand = new RelayCommand(_ => RemoveIngredient(), _ => SelectedIngredient != null);
+        // Edit mode toggle (button is only visible to owner/admin)
+        PerformEditCommand = new RelayCommand(_ => ToggleEdit(), _ => IsOwnerOrAdmin);
 
-        MessageBox.Show($"Created: {Recipe?.Created}", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        // Ingredient commands depend on edit mode too
+        AddIngredientCommand = new RelayCommand(_ => AddIngredient(), _ => IsEditing && !string.IsNullOrWhiteSpace(NewIngredientText));
+        RemoveIngredientCommand = new RelayCommand(_ => RemoveIngredient(), _ => IsEditing && SelectedIngredient != null);
     }
 
     // 5) Commands + Execute/CanExecute
     public RelayCommand PerformSaveCommand { get; }
     public RelayCommand PerformDeleteCommand { get; }
     public RelayCommand PerformCloseCommand { get; }
+    public RelayCommand PerformEditCommand { get; }
     public RelayCommand AddIngredientCommand { get; }
     public RelayCommand RemoveIngredientCommand { get; }
 
@@ -146,6 +149,10 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         }
     }
 
+    private void ToggleEdit() {
+        IsEditing = !IsEditing;
+    }
+
     // 6) Bindable state (editable input)
     // editable copy exposed to the view
     private Recipe? _recipe;
@@ -189,6 +196,22 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
             }
         }
     }
+
+    // Edit mode (default: not editing)
+    private bool _isEditing;
+    public bool IsEditing {
+        get => _isEditing;
+        private set {
+            if (Set(ref _isEditing, value)) {
+                OnPropertyChanged(nameof(EditButtonText));
+                // update ingredient buttons availability
+                AddIngredientCommand?.RaiseCanExecuteChanged();
+                RemoveIngredientCommand?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public string EditButtonText => IsEditing ? "Stop Editing" : "Edit";
 
     public string Created {
         get => Recipe?.Created.ToString("g") ?? string.Empty;
@@ -268,9 +291,10 @@ public class RecipeDetailWindowViewModel : ViewModelBase {
         get => _isOwnerOrAdmin;
         private set {
             if (Set(ref _isOwnerOrAdmin, value)) {
-                // update Save and Delete command availability when this changes
+                // update command availability when this changes
                 PerformSaveCommand?.RaiseCanExecuteChanged();
                 PerformDeleteCommand?.RaiseCanExecuteChanged();
+                PerformEditCommand?.RaiseCanExecuteChanged();
             }
         }
     }

@@ -44,6 +44,7 @@ public class RecipeListWindowViewModel : ViewModelBase {
 
         OpenMainWindowCommand = new RelayCommand(_ => OpenMainWindow());
         OpenAddRecipeWindowCommand = new RelayCommand(_ => OpenAddRecipeWindow());
+        OpenCopyRecipeWindowCommand = new RelayCommand(_ => OpenCopyRecipeWindow(), _ => SelectedRecipe != null);
 
         // canExecute checks selection
         OpenRecipeDetailWindowCommand = new RelayCommand(_ => OpenRecipeDetailWindow(), _ => SelectedRecipe != null);
@@ -96,6 +97,7 @@ public class RecipeListWindowViewModel : ViewModelBase {
     public RelayCommand TryLogoutCommand { get; }
     public RelayCommand OpenMainWindowCommand { get; }
     public RelayCommand OpenAddRecipeWindowCommand { get; }
+    public RelayCommand OpenCopyRecipeWindowCommand { get; }
     public RelayCommand OpenRecipeDetailWindowCommand { get; }
     public RelayCommand PerformDeleteCommand { get; }
     public RelayCommand OpenUserListWindowCommand { get; }
@@ -122,6 +124,27 @@ public class RecipeListWindowViewModel : ViewModelBase {
         if (dialogResult == true) {
             UpdateRecipesList();
             // selection may have changed -> recompute
+            UpdateOwnerOrAdmin();
+        }
+    }
+
+    private void OpenCopyRecipeWindow() {
+        if (SelectedRecipe == null) return;
+
+        var owner = Application.Current?.Windows.OfType<RecipeListWindow>().FirstOrDefault();
+
+        using var scope = _services.CreateScope();
+
+        // Create a VM seeded from the selected recipe and pass it to the window
+        var vm = ActivatorUtilities.CreateInstance<AddRecipeWindowViewModel>(scope.ServiceProvider, SelectedRecipe);
+        var window = ActivatorUtilities.CreateInstance<AddRecipeWindow>(scope.ServiceProvider, vm);
+
+        if (owner != null) window.Owner = owner;
+
+        var dialogResult = window.ShowDialog();
+
+        if (dialogResult == true) {
+            UpdateRecipesList();
             UpdateOwnerOrAdmin();
         }
     }
@@ -213,6 +236,7 @@ public class RecipeListWindowViewModel : ViewModelBase {
                 // Notify that command availability may have changed
                 OpenRecipeDetailWindowCommand?.RaiseCanExecuteChanged();
                 PerformDeleteCommand?.RaiseCanExecuteChanged();
+                OpenCopyRecipeWindowCommand?.RaiseCanExecuteChanged();
             }
         }
     }
@@ -271,16 +295,6 @@ public class RecipeListWindowViewModel : ViewModelBase {
                 Recipes = new ObservableCollection<Recipe>(_recipeManager.GetByOwner(_userManager.CurrentUser));
         }
     }
-    private static Window? GetActiveWindow() {
-        var app = Application.Current;
-        if (app == null) return null;
-
-        // Prefer the active focused window; fall back to any visible/enabled; then MainWindow
-        return app.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
-            ?? app.Windows.OfType<Window>().FirstOrDefault(w => w.IsVisible && w.IsEnabled)
-            ?? app.MainWindow;
-    }
-
 
     // 11) Nested types (none)
 }
