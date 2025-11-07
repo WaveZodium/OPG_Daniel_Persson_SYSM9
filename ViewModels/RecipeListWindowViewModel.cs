@@ -230,7 +230,6 @@ public class RecipeListWindowViewModel : ViewModelBase {
         SelectedCategory = null;
         SelectedDate = null;
         SearchText = string.Empty;
-        //ApplyFilters();
     }
 
     // 6) Bindable state (editable input)
