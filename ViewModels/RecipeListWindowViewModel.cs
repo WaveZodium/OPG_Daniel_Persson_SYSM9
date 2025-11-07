@@ -263,8 +263,6 @@ public class RecipeListWindowViewModel : ViewModelBase {
             if (Set(ref _searchText, value)) {
                 ApplyFilters();
             }
-            OnPropertyChanged();
-
         }
     }
 
@@ -275,7 +273,6 @@ public class RecipeListWindowViewModel : ViewModelBase {
             if (Set(ref _selectedCategory, value)) {
                 ApplyFilters();
             }
-            OnPropertyChanged();
         }
     }
 
@@ -286,8 +283,6 @@ public class RecipeListWindowViewModel : ViewModelBase {
             if (Set(ref _selectedDate, value)) {
                 ApplyFilters();
             }
-            OnPropertyChanged();
-
         }
     }
 
@@ -384,10 +379,16 @@ public class RecipeListWindowViewModel : ViewModelBase {
             query = query.Where(r => r.Category == cat);
         }
 
-        // Date filter (Created on or after selected date)
+        // Date filter: match recipes created on the selected calendar day (ignore time)
         if (_selectedDate.HasValue) {
-            var d0 = _selectedDate.Value.Date;
-            query = query.Where(r => r.Created >= d0);
+            var day = _selectedDate.Value.Date; // local date from DatePicker
+            query = query.Where(r => r.Created.ToLocalTime().Date == day);
+            // Alternative (equivalent): range match for the day
+            // var nextDay = day.AddDays(1);
+            // query = query.Where(r => {
+            //     var lc = r.Created.ToLocalTime();
+            //     return lc >= day && lc < nextDay;
+            // });
         }
 
         Recipes = new ObservableCollection<Recipe>(query.ToList());
