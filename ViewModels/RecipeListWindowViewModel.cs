@@ -96,6 +96,8 @@ public class RecipeListWindowViewModel : ViewModelBase {
         });
 
         OpenUsageInfoWindowCommand = new RelayCommand(_ => OpenUsageInfoWindow()); // init
+
+        ClearFiltersCommand = new RelayCommand(_ => ClearFilters());
     }
 
     // 5) Commands + Execute/CanExecute
@@ -107,7 +109,8 @@ public class RecipeListWindowViewModel : ViewModelBase {
     public RelayCommand PerformDeleteCommand { get; }
     public RelayCommand OpenUserListWindowCommand { get; }
     public RelayCommand OpenUserDetailsCommand { get; }
-    public RelayCommand OpenUsageInfoWindowCommand { get; } // add this
+    public RelayCommand OpenUsageInfoWindowCommand { get; }
+    public RelayCommand ClearFiltersCommand { get; }
 
     private void OpenMainWindow() {
         // Signal: true => go back to login (logout flow)
@@ -223,6 +226,13 @@ public class RecipeListWindowViewModel : ViewModelBase {
         window.ShowDialog();
     }
 
+    private void ClearFilters() {
+        SelectedCategory = null;
+        SelectedDate = null;
+        SearchText = string.Empty;
+        //ApplyFilters();
+    }
+
     // 6) Bindable state (editable input)
     private ObservableCollection<Recipe> _recipes = new();
     public ObservableCollection<Recipe> Recipes {
@@ -254,6 +264,8 @@ public class RecipeListWindowViewModel : ViewModelBase {
             if (Set(ref _searchText, value)) {
                 ApplyFilters();
             }
+            OnPropertyChanged();
+
         }
     }
 
@@ -264,6 +276,7 @@ public class RecipeListWindowViewModel : ViewModelBase {
             if (Set(ref _selectedCategory, value)) {
                 ApplyFilters();
             }
+            OnPropertyChanged();
         }
     }
 
@@ -274,6 +287,8 @@ public class RecipeListWindowViewModel : ViewModelBase {
             if (Set(ref _selectedDate, value)) {
                 ApplyFilters();
             }
+            OnPropertyChanged();
+
         }
     }
 

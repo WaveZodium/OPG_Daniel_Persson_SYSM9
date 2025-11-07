@@ -57,6 +57,7 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,4,0">
                     <TextBlock Text="Filter By Title" FontWeight="SemiBold" Margin="0,0,0,4"/>
@@ -72,11 +73,17 @@
                               ToolTip="Select a category to filter recipes"
                               Style="{StaticResource RoundedComboBoxStyle}"/>
                 </StackPanel>
-                <StackPanel Grid.Row="0" Grid.Column="2"  Margin="0,0,0,0">
+                <StackPanel Grid.Row="0" Grid.Column="2"  Margin="0,0,4,0">
                     <TextBlock Text="Filter By Date" FontWeight="SemiBold" Margin="0,0,0,4"/>
                     <DatePicker SelectedDate="{Binding SelectedDate}" Margin="0" Padding="0"
                                 Style="{StaticResource RoundedDatePickerStyle}"
                                 ToolTip="Select a date to filter recipes created on or after this date"/>
+                </StackPanel>
+                <StackPanel Grid.Row="0" Grid.Column="3" Margin="0,0,0,0" VerticalAlignment="Bottom">
+                    <Button Content="Clear Filters" Height="33" Margin="0,0,0,2"
+                            ToolTip="Clear all filters"
+                            Command="{Binding ClearFiltersCommand}" 
+                            Style="{StaticResource ButtonLightGrayStyle}"/>
                 </StackPanel>
             </Grid>
             <ScrollViewer 
