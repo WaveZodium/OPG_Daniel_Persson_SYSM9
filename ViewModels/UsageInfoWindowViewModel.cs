@@ -33,109 +33,153 @@ public class UsageInfoWindowViewModel : ViewModelBase {
             FontFamily = SystemFonts.MessageFontFamily
         };
 
+        // Local helpers for consistency
+        Paragraph Header(string text, double top = 12, double bottom = 4) =>
+            new() { Margin = new Thickness(0, top, 0, bottom), Inlines = { new Bold(new Run(text)) } };
+        List BulletList() => new() { MarkerStyle = TextMarkerStyle.Disc };
+        List CircleList() => new() { MarkerStyle = TextMarkerStyle.Circle };
+        List NumberList() => new() { MarkerStyle = TextMarkerStyle.Decimal };
+
         // Title
-        var title = new Paragraph { Margin = new Thickness(0, 0, 0, 8) };
-        title.Inlines.Add(new Bold(new Run("CookMaster - Usage Guide")));
-        doc.Blocks.Add(title);
+        doc.Blocks.Add(new Paragraph {
+            Margin = new Thickness(0, 0, 0, 10),
+            Inlines = { new Bold(new Run("CookMaster – Usage Guide")) }
+        });
 
-        // Intro
+        // Overview
         doc.Blocks.Add(new Paragraph(new Run(
-            "This guide explains the common tasks in CookMaster: signing in, working with recipes, and user management.")));
+            "CookMaster lets users create, view, copy, edit and manage recipes. Admins additionally manage users and see all recipes. This guide summarizes common actions, filtering, dialogs, and behavior.")));
 
-        // Sign in and account actions
-        var signinHeader = new Paragraph { Margin = new Thickness(0, 12, 0, 4) };
-        signinHeader.Inlines.Add(new Bold(new Run("Sign in and account actions")));
-        doc.Blocks.Add(signinHeader);
+        // Quick start
+        doc.Blocks.Add(Header("Quick start", top: 10));
+        var quick = NumberList();
+        quick.ListItems.Add(new ListItem(new Paragraph(new Run("Sign in (or Register a new account)."))));
+        quick.ListItems.Add(new ListItem(new Paragraph(new Run("Use the search / filters if you have many recipes."))));
+        quick.ListItems.Add(new ListItem(new Paragraph(new Run("Click Add Recipe to create one."))));
+        quick.ListItems.Add(new ListItem(new Paragraph(new Run("Select a recipe row → View Recipe to inspect or edit."))));
+        quick.ListItems.Add(new ListItem(new Paragraph(new Run("Select a recipe → Copy Recipe to create a variant."))));
+        quick.ListItems.Add(new ListItem(new Paragraph(new Run("Use Logout when finished."))));
+        doc.Blocks.Add(quick);
 
-        var signinList = new List { MarkerStyle = TextMarkerStyle.Disc };
-        signinList.ListItems.Add(new ListItem(new Paragraph(new Run("Enter Username and Password, then choose Sign In."))));
-        signinList.ListItems.Add(new ListItem(new Paragraph(new Run("Use \"Register\" to create a new account if you don’t have one."))));
-        signinList.ListItems.Add(new ListItem(new Paragraph(new Run("Use \"Forgot password\" to recover access if needed."))));
-        doc.Blocks.Add(signinList);
+        // Roles
+        doc.Blocks.Add(Header("User roles"));
+        var roles = BulletList();
+        roles.ListItems.Add(new ListItem(new Paragraph(new Run("Standard user: Sees only own recipes; can add, copy, edit, delete their recipes."))));
+        roles.ListItems.Add(new ListItem(new Paragraph(new Run("Admin: Sees all recipes; can delete any; can change owner; can copy any recipe; can open user list."))));
+        doc.Blocks.Add(roles);
+
+        // Sign in & account
+        doc.Blocks.Add(Header("Sign in & account"));
+        var signin = BulletList();
+        signin.ListItems.Add(new ListItem(new Paragraph(new Run("Enter Username + Password then Sign In."))));
+        signin.ListItems.Add(new ListItem(new Paragraph(new Run("Register: Creates a new account."))));
+        signin.ListItems.Add(new ListItem(new Paragraph(new Run("Forgot password: Recovery flow (if implemented)."))));
+        signin.ListItems.Add(new ListItem(new Paragraph(new Run("Click your displayed username to open user details."))));
+        doc.Blocks.Add(signin);
 
         // Recipe list window
-        var listHeader = new Paragraph { Margin = new Thickness(0, 12, 0, 4) };
-        listHeader.Inlines.Add(new Bold(new Run("Recipe list window")));
-        doc.Blocks.Add(listHeader);
+        doc.Blocks.Add(Header("Recipe list window"));
+        doc.Blocks.Add(new Paragraph(new Run("Shows a grid of recipes. Select a row to enable context actions.")));
 
-        doc.Blocks.Add(new Paragraph(new Run(
-            "The grid shows your recipes (or all recipes if you are an admin). Select a row to enable actions.")));
+        var columns = CircleList();
+        columns.ListItems.Add(new ListItem(new Paragraph(new Run("Created – timestamp (yyyy-MM-dd HH:mm)."))));
+        columns.ListItems.Add(new ListItem(new Paragraph(new Run("Recipe Name – title."))));
+        columns.ListItems.Add(new ListItem(new Paragraph(new Run("Category – classification."))));
+        columns.ListItems.Add(new ListItem(new Paragraph(new Run("Owner – creator (visible; relevant to admins)."))));
+        doc.Blocks.Add(columns);
 
-        var colsList = new List { MarkerStyle = TextMarkerStyle.Circle };
-        colsList.ListItems.Add(new ListItem(new Paragraph(new Run("Created — when the recipe was created (yyyy-MM-dd HH:mm)."))));
-        colsList.ListItems.Add(new ListItem(new Paragraph(new Run("Recipe Name — the title."))));
-        colsList.ListItems.Add(new ListItem(new Paragraph(new Run("Category — the recipe category."))));
-        colsList.ListItems.Add(new ListItem(new Paragraph(new Run("Owner — who created the recipe."))));
-        doc.Blocks.Add(colsList);
+        doc.Blocks.Add(Header("Actions", top: 6));
+        var actions = BulletList();
+        actions.ListItems.Add(new ListItem(new Paragraph(new Run("Add Recipe – open creation dialog."))));
+        actions.ListItems.Add(new ListItem(new Paragraph(new Run("View Recipe – inspect/edit selected recipe."))));
+        actions.ListItems.Add(new ListItem(new Paragraph(new Run("Copy Recipe – create a new recipe pre-filled from the selected one (variant drafting)."))));
+        actions.ListItems.Add(new ListItem(new Paragraph(new Run("Delete Recipe – remove selected (owner or admin)."))));
+        actions.ListItems.Add(new ListItem(new Paragraph(new Run("List Users – admin user management view."))));
+        actions.ListItems.Add(new ListItem(new Paragraph(new Run("Help / Info icon – reopen this guide."))));
+        doc.Blocks.Add(actions);
 
-        var actionsHeader = new Paragraph { Margin = new Thickness(0, 8, 0, 4) };
-        actionsHeader.Inlines.Add(new Bold(new Run("Actions")));
-        doc.Blocks.Add(actionsHeader);
+        // Filtering & searching
+        doc.Blocks.Add(Header("Filtering & searching"));
+        var filtering = BulletList();
+        filtering.ListItems.Add(new ListItem(new Paragraph(new Run("Search box: case-insensitive match against title, category name, or owner username."))));
+        filtering.ListItems.Add(new ListItem(new Paragraph(new Run("Category filter: choose a category or blank (null) to show all."))));
+        filtering.ListItems.Add(new ListItem(new Paragraph(new Run("Date filter: picks recipes created on that calendar day (local date)."))));
+        filtering.ListItems.Add(new ListItem(new Paragraph(new Run("Filters combine (AND). Clear Filters resets all to show full list."))));
+        filtering.ListItems.Add(new ListItem(new Paragraph(new Run("Admin sees all recipes; standard users see only their own before filters apply."))));
+        doc.Blocks.Add(filtering);
 
-        var actionsList = new List { MarkerStyle = TextMarkerStyle.Disc };
-        actionsList.ListItems.Add(new ListItem(new Paragraph(new Run("Add Recipe — open a dialog to create a new recipe."))));
-        actionsList.ListItems.Add(new ListItem(new Paragraph(new Run("View Recipe — open details for the selected recipe."))));
-        actionsList.ListItems.Add(new ListItem(new Paragraph(new Run("Delete Recipe — delete the selected recipe (owner or admin only)."))));
-        actionsList.ListItems.Add(new ListItem(new Paragraph(new Run("List Users — view all users (admins only)."))));
-        doc.Blocks.Add(actionsList);
+        // Add recipe dialog
+        doc.Blocks.Add(Header("Add recipe dialog"));
+        var add = NumberList();
+        add.ListItems.Add(new ListItem(new Paragraph(new Run("Enter Title."))));
+        add.ListItems.Add(new ListItem(new Paragraph(new Run("Ingredients: type ingredient → Add. Select + Remove to delete."))));
+        add.ListItems.Add(new ListItem(new Paragraph(new Run("Instructions: multi-line text; wrapping enabled."))));
+        add.ListItems.Add(new ListItem(new Paragraph(new Run("Select Category."))));
+        add.ListItems.Add(new ListItem(new Paragraph(new Run("(If opened as Copy) Fields are pre-filled; adjust as needed."))));
+        add.ListItems.Add(new ListItem(new Paragraph(new Run("Click Add Recipe to save or Cancel to abort."))));
+        doc.Blocks.Add(add);
 
-        // User UI
-        var userHeader = new Paragraph { Margin = new Thickness(0, 8, 0, 4) };
-        userHeader.Inlines.Add(new Bold(new Run("User UI")));
-        doc.Blocks.Add(userHeader);
+        // Recipe detail dialog
+        doc.Blocks.Add(Header("Recipe detail dialog"));
+        var detail = BulletList();
+        detail.ListItems.Add(new ListItem(new Paragraph(new Run("Edit title, ingredients, instructions, category."))));
+        detail.ListItems.Add(new ListItem(new Paragraph(new Run("Copy Recipe: creates a separate new recipe using current fields (original unchanged)."))));
+        detail.ListItems.Add(new ListItem(new Paragraph(new Run("Owner (admins only) can be reassigned."))));
+        detail.ListItems.Add(new ListItem(new Paragraph(new Run("Save applies changes immediately."))));
+        detail.ListItems.Add(new ListItem(new Paragraph(new Run("Close: prompts if unsaved changes (Save / Discard / Cancel)."))));
+        detail.ListItems.Add(new ListItem(new Paragraph(new Run("Delete: confirmation required (owner/admin)."))));
+        doc.Blocks.Add(detail);
 
-        var userList = new List { MarkerStyle = TextMarkerStyle.Disc };
-        userList.ListItems.Add(new ListItem(new Paragraph(new Run("Logged in as: Click your username to open your user details."))));
-        userList.ListItems.Add(new ListItem(new Paragraph(new Run("Use Logout to sign out and return to the sign-in window."))));
-        userList.ListItems.Add(new ListItem(new Paragraph(new Run("Use the info icon or row to reopen this help window."))));
-        doc.Blocks.Add(userList);
+        // Copying behavior
+        doc.Blocks.Add(Header("Copying recipes"));
+        var copy = BulletList();
+        copy.ListItems.Add(new ListItem(new Paragraph(new Run("From list: Select a recipe → Copy Recipe to open Add dialog pre-filled."))));
+        copy.ListItems.Add(new ListItem(new Paragraph(new Run("From detail: Use Copy to branch a variation while keeping the original."))));
+        copy.ListItems.Add(new ListItem(new Paragraph(new Run("Copied recipe fields: title, ingredients, instructions, category. Timestamps reset on save."))));
+        copy.ListItems.Add(new ListItem(new Paragraph(new Run("Original recipe is not modified; you must click Add/Save in the dialog to persist the copy."))));
+        doc.Blocks.Add(copy);
 
-        // Add recipe
-        var addHeader = new Paragraph { Margin = new Thickness(0, 12, 0, 4) };
-        addHeader.Inlines.Add(new Bold(new Run("Add recipe")));
-        doc.Blocks.Add(addHeader);
+        // User management (admin)
+        doc.Blocks.Add(Header("User management (admin)"));
+        var um = BulletList();
+        um.ListItems.Add(new ListItem(new Paragraph(new Run("List Users window shows accounts."))));
+        um.ListItems.Add(new ListItem(new Paragraph(new Run("View user details (read-only unless extended)."))));
+        doc.Blocks.Add(um);
 
-        var addList = new List { MarkerStyle = TextMarkerStyle.Decimal };
-        addList.ListItems.Add(new ListItem(new Paragraph(new Run("Enter Title."))));
-        addList.ListItems.Add(new ListItem(new Paragraph(new Run("Ingredients: type an ingredient and click Add. Select an item and click Remove to delete it."))));
-        addList.ListItems.Add(new ListItem(new Paragraph(new Run("Write the Instructions (multi-line, wrapping is enabled)."))));
-        addList.ListItems.Add(new ListItem(new Paragraph(new Run("Choose a Category."))));
-        addList.ListItems.Add(new ListItem(new Paragraph(new Run("Click Add Recipe to save, or Cancel to close without saving."))));
-        doc.Blocks.Add(addList);
+        // Data & validation
+        doc.Blocks.Add(Header("Data & validation"));
+        var data = BulletList();
+        data.ListItems.Add(new ListItem(new Paragraph(new Run("Mandatory: title, ≥1 ingredient, instructions, category."))));
+        data.ListItems.Add(new ListItem(new Paragraph(new Run("Duplicate ingredients can be manually removed; no silent merge."))));
+        data.ListItems.Add(new ListItem(new Paragraph(new Run("Timestamps use local time for display."))));
+        doc.Blocks.Add(data);
 
-        // Recipe details
-        var detailsHeader = new Paragraph { Margin = new Thickness(0, 12, 0, 4) };
-        detailsHeader.Inlines.Add(new Bold(new Run("Recipe details")));
-        doc.Blocks.Add(detailsHeader);
+        // Safety & confirmations
+        doc.Blocks.Add(Header("Safety & confirmations"));
+        var safe = BulletList();
+        safe.ListItems.Add(new ListItem(new Paragraph(new Run("Delete operations always ask for confirmation."))));
+        safe.ListItems.Add(new ListItem(new Paragraph(new Run("Unsaved changes prompt prevents accidental loss."))));
+        doc.Blocks.Add(safe);
 
-        var detailsList = new List { MarkerStyle = TextMarkerStyle.Disc };
-        detailsList.ListItems.Add(new ListItem(new Paragraph(new Run("Edit fields (title, ingredients, instructions, category)."))));
-        detailsList.ListItems.Add(new ListItem(new Paragraph(new Run("Save — applies your changes to the original recipe."))));
-        detailsList.ListItems.Add(new ListItem(new Paragraph(new Run("Close — if there are unsaved changes, you’ll be prompted to Save, Discard, or Cancel."))));
-        detailsList.ListItems.Add(new ListItem(new Paragraph(new Run("Delete — removes the recipe after confirmation (owner or admin)."))));
-        detailsList.ListItems.Add(new ListItem(new Paragraph(new Run("Admins can change the Owner in this view."))));
-        doc.Blocks.Add(detailsList);
+        // Keyboard shortcuts
+        doc.Blocks.Add(Header("Keyboard shortcuts"));
+        var keys = BulletList();
+        keys.ListItems.Add(new ListItem(new Paragraph(new Run("Esc: Close dialogs (if no pending confirmation)."))));
+        keys.ListItems.Add(new ListItem(new Paragraph(new Run("Enter: Activates default button (Add / Save) unless focus is in multi-line text."))));
+        doc.Blocks.Add(keys);
 
-        // Admin features
-        var adminHeader = new Paragraph { Margin = new Thickness(0, 12, 0, 4) };
-        adminHeader.Inlines.Add(new Bold(new Run("Admin features")));
-        doc.Blocks.Add(adminHeader);
+        // Troubleshooting / tips
+        doc.Blocks.Add(Header("Troubleshooting / tips"));
+        var tips = BulletList();
+        tips.ListItems.Add(new ListItem(new Paragraph(new Run("Cannot see other recipes? You may be a standard user (only own recipes)."))));
+        tips.ListItems.Add(new ListItem(new Paragraph(new Run("Actions disabled? Ensure a recipe row is selected."))));
+        tips.ListItems.Add(new ListItem(new Paragraph(new Run("Filters hiding expected recipes? Click Clear Filters."))));
+        tips.ListItems.Add(new ListItem(new Paragraph(new Run("Need a variant? Use Copy Recipe instead of editing the original."))));
+        tips.ListItems.Add(new ListItem(new Paragraph(new Run("No ingredients? Add at least one before saving."))));
+        doc.Blocks.Add(tips);
 
-        var adminList = new List { MarkerStyle = TextMarkerStyle.Disc };
-        adminList.ListItems.Add(new ListItem(new Paragraph(new Run("Recipe list shows all users’ recipes."))));
-        adminList.ListItems.Add(new ListItem(new Paragraph(new Run("List Users opens the user management window."))));
-        doc.Blocks.Add(adminList);
-
-        // Tips
-        var tipsHeader = new Paragraph { Margin = new Thickness(0, 12, 0, 4) };
-        tipsHeader.Inlines.Add(new Bold(new Run("Tips")));
-        doc.Blocks.Add(tipsHeader);
-
-        var tipsList = new List { MarkerStyle = TextMarkerStyle.Disc };
-        tipsList.ListItems.Add(new ListItem(new Paragraph(new Run("Select a recipe row to enable View and Delete."))));
-        tipsList.ListItems.Add(new ListItem(new Paragraph(new Run("If your list is empty, you may not be an admin; non-admins see only their own recipes."))));
-        tipsList.ListItems.Add(new ListItem(new Paragraph(new Run("Confirmation dialogs help prevent accidental deletes and data loss."))));
-        doc.Blocks.Add(tipsList);
+        // Final note
+        doc.Blocks.Add(new Paragraph(new Run("Reopen this window via the info icon any time. Good luck and enjoy cooking!")));
 
         return doc;
     }
