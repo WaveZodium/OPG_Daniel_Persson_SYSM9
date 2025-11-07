@@ -48,7 +48,7 @@
 
                 <!-- Editable for admins -->
                 <TextBox Margin="4"
-                         Text="{Binding User.Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                         Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                     <TextBox.Style>
                         <Style TargetType="TextBox">
                             <Setter Property="Visibility" Value="Collapsed" />
@@ -60,6 +60,7 @@
                         </Style>
                     </TextBox.Style>
                 </TextBox>
+                <TextBlock Text="{Binding UsernameError}" Foreground="Red" />
 
                 <!-- Read-only display for non-admins -->
                 <TextBlock Margin="4"

@@ -12,6 +12,8 @@ namespace CookMaster.ViewModels;
 
 public class RegisterWindowViewModel : ViewModelBase {
     // 1) Constants / static
+    private const int MinUsernameLength = 3; // minimum username length policy
+
     // Simple, pragmatic email regex:
     // - Local part: common characters
     // - Domain: one or more labels separated by dots, labels can't be empty
@@ -88,13 +90,8 @@ public class RegisterWindowViewModel : ViewModelBase {
     public string Username {
         get { return _username; }
         set {
-            if (!string.IsNullOrWhiteSpace(value) && _userManager.UserExists(value)) {
-                _usernameError = "Username already exists. Please choose another.";
-            }
-            else { _usernameError = string.Empty; }
-
-            OnPropertyChanged(nameof(UsernameError));
             _username = value;
+            ValidateUsername(value);
             PerformRegisterCommand.RaiseCanExecuteChanged();
         }
     }
@@ -259,6 +256,27 @@ public class RegisterWindowViewModel : ViewModelBase {
         return p.Length >= 8
             && p.Any(char.IsDigit)
             && p.Any(ch => !char.IsLetterOrDigit(ch));
+    }
+
+    private void ValidateUsername(string? value) {
+        var current = (value ?? string.Empty).Trim();
+
+        if (string.IsNullOrWhiteSpace(current)) {
+            UsernameError = "Username is required.";
+            return;
+        }
+
+        if (current.Length < MinUsernameLength) {
+            UsernameError = $"Username must be at least {MinUsernameLength} characters.";
+            return;
+        }
+
+        if (_userManager.UserExists(current)) {
+            UsernameError = "Username already exists. Please choose another.";
+            return;
+        }
+
+        UsernameError = string.Empty;
     }
 
     // 11) Nested types (none)

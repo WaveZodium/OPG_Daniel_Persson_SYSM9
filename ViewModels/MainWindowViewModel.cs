@@ -213,13 +213,13 @@ public class MainWindowViewModel : ViewModelBase {
 
     // Holds the last generated two-factor code returned by CodeWindow
     private string _twoFactorCode = string.Empty;
-    public string? TwoFactorCode {
+    public string TwoFactorCode {
         get => _twoFactorCode;
         set => Set(ref _twoFactorCode, value);
     }
 
     private string _generatedTwoFactorCode = string.Empty;
-    public string? GeneratedTwoFactorCode {
+    public string GeneratedTwoFactorCode {
         get => _generatedTwoFactorCode;
         set => Set(ref _generatedTwoFactorCode, value);
     }
