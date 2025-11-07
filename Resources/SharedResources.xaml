@@ -4,8 +4,6 @@
     <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
     <!-- Color palette -->
-
-    <!-- Blue -->
     <SolidColorBrush x:Key="BlueBrush">#FFADD8E6</SolidColorBrush>
     <SolidColorBrush x:Key="BlueHoverBrush">#FF63A0F0</SolidColorBrush>
     <SolidColorBrush x:Key="BluePressedBrush">#FF2B6ED9</SolidColorBrush>
@@ -20,7 +18,7 @@
     <SolidColorBrush x:Key="DangerHoverBrush">#FFB71C1C</SolidColorBrush>
     <SolidColorBrush x:Key="DangerPressedBrush">#FF8E1414</SolidColorBrush>
 
-    <!-- Light Gray (default) - adjusted: darker base, stronger hover/pressed -->
+    <!-- Light Gray (default) -->
     <SolidColorBrush x:Key="LightGrayBrush">#FFE0E0E0</SolidColorBrush>
     <SolidColorBrush x:Key="LightGrayHoverBrush">#FFD0D0D0</SolidColorBrush>
     <SolidColorBrush x:Key="LightGrayPressedBrush">#FFBFBFBF</SolidColorBrush>
@@ -29,18 +27,16 @@
     <SolidColorBrush x:Key="SecondaryForeground">#FF000000</SolidColorBrush>
     <SolidColorBrush x:Key="DisabledForeground">#99FFFFFF</SolidColorBrush>
 
-    <!-- Window background brush (AliceBlue) -->
-    <!--<SolidColorBrush x:Key="WindowBackgroundBrush">#FFADD8E6</SolidColorBrush>-->
     <SolidColorBrush x:Key="WindowBackgroundBrush">AliceBlue</SolidColorBrush>
 
-    <!-- Type-keyed Window style to override theme default -->
+    <!-- Type-keyed Window style -->
     <Style x:Key="{x:Type Window}" TargetType="Window">
         <Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}" />
         <Setter Property="FontFamily" Value="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" />
         <Setter Property="FontSize" Value="{DynamicResource {x:Static SystemFonts.MessageFontSizeKey}}" />
     </Style>
 
-    <!-- Reusable rounded textbox template (keeps ControlTemplate in one place) -->
+    <!-- Reusable rounded textbox template -->
     <ControlTemplate x:Key="RoundedTextBoxTemplate" TargetType="TextBox">
         <Border x:Name="Border"
                 Background="{TemplateBinding Background}"
@@ -62,7 +58,7 @@
         <Setter Property="Template" Value="{StaticResource RoundedTextBoxTemplate}" />
     </Style>
 
-    <!-- Reusable rounded passwordbox template (keeps ControlTemplate in one place) -->
+    <!-- Reusable rounded passwordbox template -->
     <ControlTemplate x:Key="RoundedPasswordBoxTemplate" TargetType="PasswordBox">
         <Border x:Name="Border"
                 Background="{TemplateBinding Background}"
@@ -84,7 +80,7 @@
         <Setter Property="Template" Value="{StaticResource RoundedPasswordBoxTemplate}" />
     </Style>
 
-    <!-- Reusable rounded button template (keeps ControlTemplate in one place) -->
+    <!-- Reusable rounded button template -->
     <ControlTemplate x:Key="RoundedButtonTemplate" TargetType="Button">
         <Border x:Name="Border"
                 Background="{TemplateBinding Background}"
@@ -93,7 +89,7 @@
                 CornerRadius="2"
                 Padding="{TemplateBinding Padding}">
             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                    RecognizesAccessKey="True" />
+                              RecognizesAccessKey="True" />
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsEnabled" Value="False">
@@ -102,7 +98,7 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
-    <!-- Base style - small visual defaults -->
+    <!-- Base button style -->
     <Style x:Key="BaseButtonStyle" TargetType="Button">
         <Setter Property="Template" Value="{StaticResource RoundedButtonTemplate}" />
         <Setter Property="Cursor" Value="Arrow" />
@@ -193,6 +189,171 @@
         </Style.Triggers>
     </Style>
 
-    <!-- keep a minimal implicit style for cursor behavior (preserves existing behavior) -->
     <Style TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}" />
+
+    <!-- DatePicker text box (inner) -->
+    <Style TargetType="{x:Type DatePickerTextBox}" BasedOn="{StaticResource RoundedTextBoxStyle}">
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <!-- Rounded DatePicker with CornerRadius=2 -->
+    <Style x:Key="RoundedDatePickerStyle" TargetType="{x:Type DatePicker}">
+        <Setter Property="BorderBrush" Value="#FFABAdB3"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type DatePicker}">
+                    <Grid>
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="2">
+                            <Grid Margin="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <DatePickerTextBox x:Name="PART_TextBox"
+                                                   Grid.Column="0"
+                                                   Background="Transparent"
+                                                   BorderThickness="0"
+                                                   Padding="{TemplateBinding Padding}"
+                                                   HorizontalContentAlignment="Left" />
+
+                                <Button x:Name="PART_Button"
+                                        Grid.Column="1"
+                                        Focusable="False"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Padding="6,0">
+                                    <Path Width="10" Height="6" Stretch="Uniform"
+                                          Fill="Gray" Data="M 0 0 L 10 0 L 5 6 Z"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <Popup x:Name="PART_Popup"
+                               Placement="Bottom"
+                               StaysOpen="False"
+                               AllowsTransparency="True"
+                               Focusable="False"
+                               PopupAnimation="Slide"
+                               IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}">
+                            <Border Margin="0,2,0,0"
+                                    Background="White"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="2">
+                                <Calendar x:Name="PART_Calendar"
+                                          DisplayDate="{Binding DisplayDate, RelativeSource={RelativeSource TemplatedParent}}"
+                                          SelectedDate="{Binding SelectedDate, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Border" Property="Opacity" Value="0.6"/>
+                            <Setter TargetName="PART_Button" Property="IsEnabled" Value="False"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="BorderBrush" Value="#FF7A7D84"/>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter TargetName="Border" Property="BorderBrush" Value="#FF569DE5"/>
+                        </Trigger>
+                        <Trigger SourceName="PART_Button" Property="IsPressed" Value="True">
+                            <Setter TargetName="Border" Property="BorderBrush" Value="#FF569DE5"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Rounded ComboBox style -->
+    <Style x:Key="RoundedComboBoxStyle" TargetType="{x:Type ComboBox}">
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="BorderBrush" Value="#FFABAdB3"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="4"/>
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ComboBox}">
+                    <Grid>
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="2"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ContentPresenter Grid.Column="0"
+                                              Margin="6,2,24,2"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Left"
+                                              Content="{TemplateBinding SelectionBoxItem}"
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              RecognizesAccessKey="True"/>
+
+                            <ToggleButton x:Name="DropDownToggle"
+                                          Grid.Column="1"
+                                          Margin="0"
+                                          Focusable="False"
+                                          IsChecked="{Binding Path=IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                          ClickMode="Press"
+                                          Background="Transparent"
+                                          BorderThickness="0"
+                                          Padding="6,0">
+                                <Path Width="10" Height="6" Stretch="Uniform"
+                                      Fill="Gray" Data="M 0 0 L 10 0 L 5 6 Z"/>
+                            </ToggleButton>
+
+                            <Popup x:Name="PART_Popup"
+                                   Placement="Bottom"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   PopupAnimation="Slide">
+                                <Border Margin="0,2,0,0"
+                                        Background="White"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="2">
+                                    <ScrollViewer CanContentScroll="True" SnapsToDevicePixels="True">
+                                        <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Border" Property="Opacity" Value="0.6"/>
+                            <Setter TargetName="DropDownToggle" Property="IsEnabled" Value="False"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="BorderBrush" Value="#FF7A7D84"/>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter TargetName="Border" Property="BorderBrush" Value="#FF569DE5"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

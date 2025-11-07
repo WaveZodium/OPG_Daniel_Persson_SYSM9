@@ -40,8 +40,6 @@
                 </TextBlock>
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="8,0,0,0">
-                <!-- Icon button that triggers logout; icon color changes on hover.
-                     Removed hover Background so only the icon color changes. -->
                 <TextBlock FontSize="12" HorizontalAlignment="Right" TextAlignment="Center" Margin="3" 
                            Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}">
                     <Hyperlink Command="{Binding TryLogoutCommand}">Logout</Hyperlink>
@@ -62,20 +60,22 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,4,0">
                     <TextBlock Text="Filter By Title" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBox 
-                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                             ToolTip="Type to search recipes by name, category, or owner"
-                             Style="{StaticResource RoundedTextBoxStyle}"/>
+                    <TextBox Height="35" Padding="2"
+                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                        ToolTip="Type to search recipes by name, category, or owner"
+                        Style="{StaticResource RoundedTextBoxStyle}"/>
                 </StackPanel>
                 <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,4,0">
                     <TextBlock Text="Filter By Category" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <ComboBox ItemsSource="{Binding Categories}"
+                    <ComboBox ItemsSource="{Binding Categories}" Height="35"
                               SelectedItem="{Binding SelectedCategory}"
-                              ToolTip="Select a category to filter recipes"/>
+                              ToolTip="Select a category to filter recipes"
+                              Style="{StaticResource RoundedComboBoxStyle}"/>
                 </StackPanel>
                 <StackPanel Grid.Row="0" Grid.Column="2"  Margin="0,0,0,0">
                     <TextBlock Text="Filter By Date" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <DatePicker SelectedDate="{Binding SelectedDate}"
+                    <DatePicker SelectedDate="{Binding SelectedDate}" Margin="0" Padding="0"
+                                Style="{StaticResource RoundedDatePickerStyle}"
                                 ToolTip="Select a date to filter recipes created on or after this date"/>
                 </StackPanel>
             </Grid>
@@ -109,9 +109,9 @@
                     Command="{Binding OpenCopyRecipeWindowCommand}" 
                     Style="{StaticResource ButtonLightGrayStyle}"/>
             <Button Content="View Recipe" Width="160" Height="30" Margin="0,4"
-        ToolTip="View details of the selected recipe"
-        Command="{Binding OpenRecipeDetailWindowCommand}" 
-        Style="{StaticResource ButtonLightGrayStyle}"/>
+                    ToolTip="View details of the selected recipe"
+                    Command="{Binding OpenRecipeDetailWindowCommand}" 
+                    Style="{StaticResource ButtonLightGrayStyle}"/>
             <Button Content="Delete Recipe" Width="160" Height="30" Margin="4"
                     ToolTip="Delete this recipe"
                     Command="{Binding PerformDeleteCommand}" 

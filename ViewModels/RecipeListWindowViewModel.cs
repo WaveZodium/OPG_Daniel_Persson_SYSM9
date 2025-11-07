@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
 
@@ -20,6 +22,9 @@ public class RecipeListWindowViewModel : ViewModelBase {
     private readonly UserManager _userManager;
     private readonly IServiceProvider _services;
     private readonly IDialogService _dialogService;
+
+    // Unfiltered source list; filters are applied on top of this
+    private List<Recipe> _allRecipes = new();
 
     // 3) Events
     public event Action<bool>? RequestClose;
@@ -241,6 +246,37 @@ public class RecipeListWindowViewModel : ViewModelBase {
         }
     }
 
+    // Search/filter inputs
+    private string _searchText = string.Empty;
+    public string SearchText {
+        get => _searchText;
+        set {
+            if (Set(ref _searchText, value)) {
+                ApplyFilters();
+            }
+        }
+    }
+
+    private RecipeCategory? _selectedCategory;
+    public RecipeCategory? SelectedCategory {
+        get => _selectedCategory;
+        set {
+            if (Set(ref _selectedCategory, value)) {
+                ApplyFilters();
+            }
+        }
+    }
+
+    private DateTime? _selectedDate;
+    public DateTime? SelectedDate {
+        get => _selectedDate;
+        set {
+            if (Set(ref _selectedDate, value)) {
+                ApplyFilters();
+            }
+        }
+    }
+
     // New bindable property for the logged-in user display
     private string _loggedInUserName = string.Empty;
     public string LoggedInUserName {
@@ -279,9 +315,15 @@ public class RecipeListWindowViewModel : ViewModelBase {
     // 8) Derived/computed properties
 
     // 9) Collections
-    // Expose enum list for ComboBox
+    // Expose enum list for other uses (kept)
     public IEnumerable<RecipeCategory> Categories { get; } =
         Enum.GetValues(typeof(RecipeCategory)).Cast<RecipeCategory>();
+
+    // New: list with a leading null to allow clearing the filter
+    public IEnumerable<RecipeCategory?> CategoryFilterOptions { get; } =
+        new RecipeCategory?[] { null }.Concat(Enum.GetValues(typeof(RecipeCategory))
+                                                .Cast<RecipeCategory>()
+                                                .Select(c => (RecipeCategory?)c));
 
     // 10) Helpers/validation
     private void UpdateOwnerOrAdmin() {
@@ -290,18 +332,56 @@ public class RecipeListWindowViewModel : ViewModelBase {
     }
 
     private void UpdateRecipesList() {
+        IEnumerable<Recipe> baseList;
+
         if (IsAdmin) {
-            Recipes = new ObservableCollection<Recipe>(_recipeManager.GetAllRecipes());
+            baseList = _recipeManager.GetAllRecipes();
         }
         else {
-            if (_userManager.CurrentUser != null)
-                Recipes = new ObservableCollection<Recipe>(_recipeManager.GetByOwner(_userManager.CurrentUser));
+            baseList = _userManager.CurrentUser != null
+                ? _recipeManager.GetByOwner(_userManager.CurrentUser)
+                : Enumerable.Empty<Recipe>();
         }
+
+        _allRecipes = baseList.ToList();
+        ApplyFilters();
     }
 
     public void RefreshRecipes() {
         UpdateRecipesList();
         UpdateOwnerOrAdmin();
+    }
+
+    private void ApplyFilters() {
+        IEnumerable<Recipe> query = _allRecipes;
+
+        // Text filter: match title, category name, or owner username (case-insensitive)
+        if (!string.IsNullOrWhiteSpace(_searchText)) {
+            var s = _searchText.Trim();
+            query = query.Where(r =>
+                ContainsIgnoreCase(r.Title, s) ||
+                ContainsIgnoreCase(r.Category.ToString(), s) ||
+                ContainsIgnoreCase(r.Owner?.Username, s));
+        }
+
+        // Category filter (only when a category is selected)
+        if (_selectedCategory.HasValue) {
+            var cat = _selectedCategory.Value;
+            query = query.Where(r => r.Category == cat);
+        }
+
+        // Date filter (Created on or after selected date)
+        if (_selectedDate.HasValue) {
+            var d0 = _selectedDate.Value.Date;
+            query = query.Where(r => r.Created >= d0);
+        }
+
+        Recipes = new ObservableCollection<Recipe>(query.ToList());
+    }
+
+    private static bool ContainsIgnoreCase(string? source, string value) {
+        if (string.IsNullOrWhiteSpace(source)) return false;
+        return source.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     // 11) Nested types (none)
