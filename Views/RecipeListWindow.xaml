@@ -50,23 +50,53 @@
         </Grid>
 
         <!-- Left column: recipe list -->
-        <ScrollViewer Grid.Row="2" Grid.Column="0"
+        <StackPanel Grid.Row="2" Grid.Column="0">
+            <Grid Margin="0,0,0,8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,4,0">
+                    <TextBlock Text="Filter By Title" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBox 
+                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                             ToolTip="Type to search recipes by name, category, or owner"
+                             Style="{StaticResource RoundedTextBoxStyle}"/>
+                </StackPanel>
+                <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,4,0">
+                    <TextBlock Text="Filter By Category" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <ComboBox ItemsSource="{Binding Categories}"
+                              SelectedItem="{Binding SelectedCategory}"
+                              ToolTip="Select a category to filter recipes"/>
+                </StackPanel>
+                <StackPanel Grid.Row="0" Grid.Column="2"  Margin="0,0,0,0">
+                    <TextBlock Text="Filter By Date" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <DatePicker SelectedDate="{Binding SelectedDate}"
+                                ToolTip="Select a date to filter recipes created on or after this date"/>
+                </StackPanel>
+            </Grid>
+            <ScrollViewer 
               VerticalScrollBarVisibility="Auto"
               HorizontalScrollBarVisibility="Disabled"
               CanContentScroll="True">
-            <DataGrid ItemsSource="{Binding Recipes}" 
+                <DataGrid ItemsSource="{Binding Recipes}" 
                   SelectedItem="{Binding SelectedRecipe}" 
                   AutoGenerateColumns="False" 
                   Height="auto" Margin="0,0,0,0"
                   IsReadOnly="True">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Created" Binding="{Binding Created, StringFormat=\{0:yyyy-MM-dd HH:mm\}}" Width="*"/>
-                    <DataGridTextColumn Header="Recipe Name" Binding="{Binding Title}" Width="*"/>
-                    <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="*"/>
-                    <DataGridTextColumn Header="Owner" Binding="{Binding Owner.Username}" Width="*"/>
-                </DataGrid.Columns>
-            </DataGrid>
-        </ScrollViewer>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Created" Binding="{Binding Created, StringFormat=\{0:yyyy-MM-dd HH:mm\}}" Width="*"/>
+                        <DataGridTextColumn Header="Recipe Name" Binding="{Binding Title}" Width="*"/>
+                        <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="*"/>
+                        <DataGridTextColumn Header="Owner" Binding="{Binding Owner.Username}" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </ScrollViewer>
+        </StackPanel>
 
         <!-- Right column: username + buttons -->
         <StackPanel Grid.Row="2" Grid.Column="1" Margin="4,0,0,0">

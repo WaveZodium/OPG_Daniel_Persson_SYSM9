@@ -279,6 +279,9 @@ public class RecipeListWindowViewModel : ViewModelBase {
     // 8) Derived/computed properties
 
     // 9) Collections
+    // Expose enum list for ComboBox
+    public IEnumerable<RecipeCategory> Categories { get; } =
+        Enum.GetValues(typeof(RecipeCategory)).Cast<RecipeCategory>();
 
     // 10) Helpers/validation
     private void UpdateOwnerOrAdmin() {
