@@ -58,14 +58,14 @@ public class RecipeManager {
         }
 
         if (!RecipeExists("Pasta Carbonara")) {
-            AddRecipe(new Recipe("Pasta Carbonara", new List<string> { "Pasta", "Eggs", "Parmesan cheese" }, "Cook pasta and mix with eggs and cheese", RecipeCategory.MainCourse, now, now, user));
+            AddRecipe(new Recipe("Pasta Carbonara", new List<string> { "Pasta", "Eggs", "Parmesan cheese" }, "Cook pasta and mix with eggs and cheese", RecipeCategory.MainCourse, now.AddDays(-2), now, user));
         }
         if (!RecipeExists("Spaghetti Bolognese")) {
             // seed more recipes as user2
             AddRecipe(new Recipe("Spaghetti Bolognese", new List<string> { "Spaghetti", "Ground beef", "Tomato sauce" }, "Cook spaghetti and prepare sauce", RecipeCategory.MainCourse, now, now, user));
         }
         if (!RecipeExists("Chicken Curry")) {
-            AddRecipe(new Recipe("Chicken Curry", new List<string> { "Chicken", "Curry powder", "Coconut milk" }, "Cook chicken and simmer in curry sauce", RecipeCategory.MainCourse, now, now, user));
+            AddRecipe(new Recipe("Chicken Curry", new List<string> { "Chicken", "Curry powder", "Coconut milk" }, "Cook chicken and simmer in curry sauce", RecipeCategory.MainCourse, now.AddDays(-2), now, user));
         }
 
         var user2 = _userManager.FindUser("user2");
@@ -75,10 +75,10 @@ public class RecipeManager {
             // seed more recipes as user2
         }
         if (user2 != null && !RecipeExists("Tomato Soup")) {
-            AddRecipe(new Recipe("Tomato Soup", new List<string> { "Tomatoes", "Onion", "Garlic", "Vegetable broth" }, "Cook and blend ingredients", RecipeCategory.Soup, now, now, user2));
+            AddRecipe(new Recipe("Tomato Soup", new List<string> { "Tomatoes", "Onion", "Garlic", "Vegetable broth" }, "Cook and blend ingredients", RecipeCategory.Soup, now.AddDays(-1), now, user2));
         }
         if (user2 != null && !RecipeExists("Grilled Cheese Sandwich")) {
-            AddRecipe(new Recipe("Grilled Cheese Sandwich", new List<string> { "Bread", "Cheese", "Butter" }, "Assemble and grill the sandwich", RecipeCategory.Snack, now, now, user2));
+            AddRecipe(new Recipe("Grilled Cheese Sandwich", new List<string> { "Bread", "Cheese", "Butter" }, "Assemble and grill the sandwich", RecipeCategory.Snack, now.AddDays(-1), now, user2));
         }
 
 
