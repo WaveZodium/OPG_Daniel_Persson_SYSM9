@@ -2,12 +2,14 @@
 using System.Linq;
 using System.Windows;
 
+using CookMaster.Helpers;
 using CookMaster.Managers;
 using CookMaster.MVVM;
 using CookMaster.Views;
-using CookMaster.Helpers;
 
 using Microsoft.Extensions.DependencyInjection;
+
+using static System.Formats.Asn1.AsnWriter;
 
 namespace CookMaster.ViewModels;
 
@@ -40,122 +42,214 @@ public class MainWindowViewModel : ViewModelBase {
     public RelayCommand PerformTrySignInCommand { get; }
 
     private void PerformOpenForgotPasswordWindow() {
-        // Find the current active window (owner), regardless of type
+        // Find and hide current window so the new window appears on top
         var current = WindowHelper.GetActiveWindow();
 
-        // Hide the current window so it disappears behind the modal dialog
+        // Hide the current window
         current?.Hide();
 
+        IServiceScope? scope = null;
         try {
-            // Open the ForgotPasswordWindow as a modal dialog from a DI scope
-            using var scope = _services.CreateScope();
+            // Create a DI scope to resolve the window that should be opened.
+            scope = _services.CreateScope();
+
+            // Resolve the ForgotPasswordWindow from the DI scope
             var window = scope.ServiceProvider.GetRequiredService<ForgotPasswordWindow>();
 
-            // Set the owner to keep proper window parenting (optional, but recommended)
+            // Set the owner to keep proper window parenting (optional, but recommended).
+            // It is needed for WindowStartupLocation.CenterOwner to work correctly.
             if (current != null)
                 window.Owner = current;
 
-            // Show dialog; this blocks until the register window closes (either via X or Close button)
-            var result = window.ShowDialog();
-        }
-        finally {
-            // When the dialog closes, restore the same window
-            if (current != null) {
-                current.Show();
-                current.Activate();
-            }
-        }
-    }
-
-    private void OpenRecipeListWindow() {
-        var current = WindowHelper.GetActiveWindow();
-        current?.Hide();
-
-        try {
-            using var scope = _services.CreateScope();
-            var window = scope.ServiceProvider.GetRequiredService<RecipeListWindow>();
-
-            if (current != null)
-                window.Owner = current;
-
-            var result = window.ShowDialog();
-
-            if (result == true) {
+            // Subscribe to the Closed event to know when it closes.
+            window.Closed += (_, _) => {
+                // When the forgot password window closes, show the main window again
                 if (current != null) {
                     current.Show();
                     current.Activate();
                     FocusUsername = true;
+
+                    // Dispose the scope after the window is done
+                    scope?.Dispose();
                 }
-            }
-            else {
-                Application.Current.Shutdown();
-            }
+            };
+
+            // Show the forgot password window (non-modal)
+            window.Show();
         }
-        catch {
+        // Handle any exceptions that may occur during window creation or showing
+        catch (Exception ex) {
+            MessageBox.Show($"An error occurred while opening the forgot password window: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             if (current != null) {
+                // Restore the main window if there was an error and ensure it is active
                 current.Show();
                 current.Activate();
             }
-            throw;
+            scope?.Dispose();
+        }
+    }
+
+    private void OpenRecipeListWindow() {
+        // Find and hide current window so the new window appears on top
+        var current = WindowHelper.GetActiveWindow();
+
+        // Hide the current window
+        current?.Hide();
+
+        IServiceScope? scope = null;
+        try {
+            // Create a DI scope to resolve the window that should be opened.
+            scope = _services.CreateScope();
+
+            // Resolve the RecipeListWindow from the DI scope
+            var window = scope.ServiceProvider.GetRequiredService<RecipeListWindow>();
+
+            // Set the owner to keep proper window parenting (optional, but recommended).
+            // It is needed for WindowStartupLocation.CenterOwner to work correctly.
+            if (current != null)
+                window.Owner = current;
+
+            // Subscribe to the Closed event to know when it closes.
+            window.Closed += (_, _) => {
+                try {
+                    var vm = window.DataContext as RecipeListWindowViewModel;
+                    if (vm?.IsLogout == true) {
+                        // User chose to log out -> return to login
+                        if (current != null) {
+                            current.Show();
+                            current.Activate();
+                            FocusUsername = true;
+                        }
+                    }
+                    else {
+                        // User closed with X (or any non-logout path) -> exit app
+                        Application.Current.Shutdown();
+                    }
+                }
+                finally {
+                    scope?.Dispose();
+                }
+            };
+
+            // Show the recipe list window (non-modal)
+            window.Show();
+        }
+        // Handle any exceptions that may occur during window creation or showing
+        catch (Exception ex) {
+            MessageBox.Show($"An error occurred while opening the recipe list window: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            if (current != null) {
+                // Restore the main window if there was an error and ensure it is active
+                current.Show();
+                current.Activate();
+            }
+            scope?.Dispose();
         }
     }
 
     // Register command execution (bound to Register button)
     private void PerformOpenRegisterWindow() {
-        // Find the current active window (owner), regardless of type
+        // Find and hide current window so the new window appears on top
         var current = WindowHelper.GetActiveWindow();
 
-        // Hide the current window so it disappears behind the modal dialog
+        // Hide the current window
         current?.Hide();
 
+        IServiceScope? scope = null;
         try {
-            // Open the RegisterWindow as a modal dialog from a DI scope
-            using var scope = _services.CreateScope();
+            // Create a DI scope to resolve the window that should be opened.
+            scope = _services.CreateScope();
+
+            // Resolve the RegisterWindow from the DI scope
             var window = scope.ServiceProvider.GetRequiredService<RegisterWindow>();
 
-            // Set the owner to keep proper window parenting (optional, but recommended)
+            // Set the owner to keep proper window parenting (optional, but recommended).
+            // It is needed for WindowStartupLocation.CenterOwner to work correctly.
             if (current != null)
                 window.Owner = current;
 
-            // Show dialog; this blocks until the register window closes (either via X or Close button)
-            var result = window.ShowDialog();
+            // Subscribe to the Closed event to know when it closes.
+            window.Closed += (_, _) => {
+                // When the register window closes, show the main window again
+                if (current != null) {
+                    current.Show();
+                    current.Activate();
+                    FocusUsername = true;
+
+                    // Dispose the scope after the window is done
+                    scope?.Dispose();
+                }
+            };
+
+            // Show the register window (non-modal)
+            window.Show();
         }
-        finally {
-            // When the dialog closes, restore the same window
+        // Handle any exceptions that may occur during window creation or showing
+        catch (Exception ex) {
+            MessageBox.Show($"An error occurred while opening the register window: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             if (current != null) {
+                // Restore the main window if there was an error and ensure it is active
                 current.Show();
                 current.Activate();
             }
+            scope?.Dispose();
         }
     }
 
     // Send two-factor code command execution (bound to Send 2FA Code button)
     private void PerformSendTwoFactorCode() {
-        // Find and hide current window so the dialog appears modally on top
+        // Find and hide current window so the new window appears on top
         var current = WindowHelper.GetActiveWindow();
+
+        // Hide the current window
         current?.Hide();
 
+        IServiceScope? scope = null;
         try {
-            using var scope = _services.CreateScope();
+            // Create a DI scope to resolve the window that should be opened.
+            scope = _services.CreateScope();
+
+            // Resolve the CodeWindow from the DI scope
             var window = scope.ServiceProvider.GetRequiredService<CodeWindow>();
 
+            // Set the owner to keep proper window parenting (optional, but recommended).
+            // It is needed for WindowStartupLocation.CenterOwner to work correctly.
             if (current != null)
                 window.Owner = current;
 
-            // Blocks until the code window closes (Copy & Close sets DialogResult and closes)
-            var result = window.ShowDialog();
+            // Subscribe to the Closed event to know when it closes.
+            window.Closed += (_, _) => {
+                try {
+                    // Read the code from the window's ViewModel when it closes
+                    if (window.DataContext is CodeWindowViewModel vm && !string.IsNullOrWhiteSpace(vm.Code)) {
+                        GeneratedTwoFactorCode = vm.Code;
+                    }
+                }
+                finally {
+                    // When the 2FA code window closes, show the main window again
+                    if (current != null) {
+                        current.Show();
+                        current.Activate();
+                    }
+                    // Put caret where the user should type the code
+                    FocusTwoFactorCode = true;
 
-            // If user clicked "Copy & Close", capture the code from the VM
-            if (result == true && window.DataContext is CodeWindowViewModel vm) {
-                GeneratedTwoFactorCode = vm.Code;
-            }
+                    // Dispose the scope after the window is done
+                    scope?.Dispose();
+                }
+            };
+
+            // Show the 2FA code window (non-modal)
+            window.Show();
         }
-        finally {
+        // Handle any exceptions that may occur during window creation or showing
+        catch (Exception ex) {
+            MessageBox.Show($"An error occurred while opening the 2FA code window: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             if (current != null) {
+                // Restore the main window if there was an error and ensure it is active
                 current.Show();
                 current.Activate();
             }
-            FocusTwoFactorCode = true;
+            scope?.Dispose();
         }
     }
 

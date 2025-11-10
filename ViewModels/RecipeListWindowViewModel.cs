@@ -1,13 +1,15 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 
+using CookMaster.Helpers;
 using CookMaster.Managers;
 using CookMaster.Models;
 using CookMaster.MVVM;
 using CookMaster.Services;
+using CookMaster.ViewModels.Contracts;
 using CookMaster.Views;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +29,7 @@ public class RecipeListWindowViewModel : ViewModelBase {
     private List<Recipe> _allRecipes = new();
 
     // 3) Events
-    public event Action<bool>? RequestClose;
+    public event Action<SessionEndReason>? SessionEndRequested;
 
     // 4) Constructors
     public RecipeListWindowViewModel(RecipeManager recipeManager, UserManager userManager, IDialogService dialogService, IServiceProvider services) {
@@ -113,8 +115,8 @@ public class RecipeListWindowViewModel : ViewModelBase {
     public RelayCommand ClearFiltersCommand { get; }
 
     private void OpenMainWindow() {
-        // Signal: true => go back to login (logout flow)
-        RequestClose?.Invoke(true);
+        IsLogout = true;
+        SessionEndRequested?.Invoke(SessionEndReason.Logout);
     }
 
     private void OpenAddRecipeWindow() {
@@ -184,7 +186,39 @@ public class RecipeListWindowViewModel : ViewModelBase {
     }
 
     private void OpenUserListWindow() {
-        // Use the current RecipeListWindow as owner
+        var current = WindowHelper.GetActiveWindow();
+        current?.Hide();
+
+        try {
+            // Create a DI scope to resolve the UserListWindow
+            using var scope = _services.CreateScope();
+
+            // Get the window UserListWindow from the DI scope
+            var window = scope.ServiceProvider.GetRequiredService<UserListWindow>();
+
+            // Set the owner to keep proper window parenting
+            if (current != null)
+                window.Owner = current;
+
+            window.Show();
+
+            window.Closed += (_, _) => {
+                // When the recipe list window closes, show the main window again
+                if (current != null) {
+                    current.Show();
+                    current.Activate();
+                }
+            };
+        }
+        catch (Exception ex) {
+            MessageBox.Show($"An error occurred while opening the user list window: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            if (current != null) {
+                current.Show();
+                current.Activate();
+            }
+        }
+
+        /*// Use the current RecipeListWindow as owner
         var owner = Application.Current?.Windows.OfType<RecipeListWindow>().FirstOrDefault();
 
         // Open the UserListWindow as a modal dialog from a DI scope
@@ -194,7 +228,9 @@ public class RecipeListWindowViewModel : ViewModelBase {
         if (owner != null)
             window.Owner = owner;
 
-        window.ShowDialog();
+        window.ShowDialog();*/
+
+
     }
 
     private void PerformDelete() {
@@ -299,6 +335,14 @@ public class RecipeListWindowViewModel : ViewModelBase {
         get => _isLoggedIn;
         private set => Set(ref _isLoggedIn, value);
     }
+
+    private bool _isLogout;
+
+    public bool IsLogout {
+        get { return _isLogout; }
+        set { _isLogout = value; }
+    }
+
 
     // Added IsAdmin backing field and property so XAML can bind visibility
     private bool _isAdmin;
