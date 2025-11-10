@@ -28,18 +28,13 @@ public class MainWindowViewModel : ViewModelBase {
 
         // Initialize commands
         PerformOpenForgotPasswordWindowCommand = new RelayCommand(_ => PerformOpenForgotPasswordWindow());
-        //PerformOpenRecipeListWindowCommand = new RelayCommand(_ => PerformOpenRecipeListWindow());
         PerformOpenRegisterWindowCommand = new RelayCommand(_ => PerformOpenRegisterWindow());
         PerformSendTwoFactorCodeCommand = new RelayCommand(_ => PerformSendTwoFactorCode());
         PerformTrySignInCommand = new RelayCommand(_ => PerformTrySignIn(), _ => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password));
-
-        // Request initial focus on the username box (bound to the attached behavior)
-        FocusUsername = true;
     }
 
     // 5) Commands + Execute/CanExecute
     public RelayCommand PerformOpenForgotPasswordWindowCommand { get; }
-    //public RelayCommand PerformOpenRecipeListWindowCommand { get; }
     public RelayCommand PerformOpenRegisterWindowCommand { get; }
     public RelayCommand PerformSendTwoFactorCodeCommand { get; }
     public RelayCommand PerformTrySignInCommand { get; }
@@ -160,6 +155,7 @@ public class MainWindowViewModel : ViewModelBase {
                 current.Show();
                 current.Activate();
             }
+            FocusTwoFactorCode = true;
         }
     }
 
@@ -177,6 +173,8 @@ public class MainWindowViewModel : ViewModelBase {
                 // Successful login; open recipe list window
                 Username = string.Empty;
                 Password = string.Empty;
+                GeneratedTwoFactorCode = string.Empty;
+                TwoFactorCode = string.Empty;
                 OpenRecipeListWindow();
             }
         }
@@ -207,6 +205,12 @@ public class MainWindowViewModel : ViewModelBase {
                 PerformTrySignInCommand?.RaiseCanExecuteChanged();
             }
         }
+    }
+
+    private bool _focusTwoFactorCode = false;
+    public bool FocusTwoFactorCode {
+        get => _focusTwoFactorCode;
+        set => Set(ref _focusTwoFactorCode, value);
     }
 
     // MVVM-friendly focus request property (bind TwoWay to attached behavior)
