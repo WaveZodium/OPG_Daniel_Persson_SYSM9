@@ -9,6 +9,7 @@ using CookMaster.Services;
 using CookMaster.Views;
 
 using Microsoft.Extensions.DependencyInjection;
+using CookMaster.Helpers;
 
 namespace CookMaster.ViewModels;
 
@@ -56,14 +57,22 @@ public class UserListWindowViewModel : ViewModelBase {
 
     private void PerformViewUser() {
         if (SelectedUser == null) return;
+        // Find and hide current window so the new window appears on top
+        var current = WindowHelper.GetActiveWindow();
+        current?.Hide();
+
         // open user detail window and pass the selected user to its VM
         using var scope = _services.CreateScope();
         var window = scope.ServiceProvider.GetRequiredService<Views.UserDetailWindow>();
+
 
         // Prefer the window's DataContext if it already is the expected VM instance,
         // otherwise resolve a VM from the scope and assign it as the DataContext.
         var vm = window.DataContext as UserDetailWindowViewModel
                  ?? scope.ServiceProvider.GetRequiredService<UserDetailWindowViewModel>();
+
+        if (current != null)
+            window.Owner = current;
 
         // Provide the selected user to the detail VM
         vm.LoadUser(SelectedUser);
@@ -77,6 +86,9 @@ public class UserListWindowViewModel : ViewModelBase {
             // After the dialog closes, refresh the user list to reflect any changes
             RefreshUsers();
         }
+
+        // Re-show the original window
+        current?.Show();
     }
 
     private void PerformDeleteUser() {
@@ -92,7 +104,7 @@ public class UserListWindowViewModel : ViewModelBase {
         }
 
         // Use dialog service instead of MessageBox
-        var owner = Application.Current?.Windows.OfType<UserListWindow>().FirstOrDefault() ?? Application.Current?.MainWindow;
+        var owner = WindowHelper.GetActiveWindow();
         var confirm = _dialogService.ShowDeleteConfirmationDialog(owner);
 
         // If dialog wasn't shown or closed unexpectedly, do nothing

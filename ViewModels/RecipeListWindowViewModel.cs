@@ -121,12 +121,14 @@ public class RecipeListWindowViewModel : ViewModelBase {
 
     private void OpenAddRecipeWindow() {
         // Open AddRecipeWindow as a modal dialog using a DI scope
-        var owner = Application.Current?.Windows.OfType<RecipeListWindow>().FirstOrDefault();
+        var current = WindowHelper.GetActiveWindow();
+        current?.Hide();
 
-        using var scope = _services.CreateScope();
+        var scope = _services.CreateScope();
         var window = scope.ServiceProvider.GetRequiredService<AddRecipeWindow>();
 
-        if (owner != null) window.Owner = owner;
+        if (current != null)
+            window.Owner = current;
 
         // ShowDialog blocks; refresh when the dialog returns true (saved)
         var dialogResult = window.ShowDialog();
@@ -136,20 +138,25 @@ public class RecipeListWindowViewModel : ViewModelBase {
             // selection may have changed -> recompute
             UpdateOwnerOrAdmin();
         }
+
+        scope.Dispose();
+        current?.Show();
     }
 
     private void OpenCopyRecipeWindow() {
         if (SelectedRecipe == null) return;
 
-        var owner = Application.Current?.Windows.OfType<RecipeListWindow>().FirstOrDefault();
+        var current = WindowHelper.GetActiveWindow();
+        current?.Hide();
 
-        using var scope = _services.CreateScope();
+        var scope = _services.CreateScope();
 
         // Create a VM seeded from the selected recipe and pass it to the window
         var vm = ActivatorUtilities.CreateInstance<AddRecipeWindowViewModel>(scope.ServiceProvider, SelectedRecipe);
         var window = ActivatorUtilities.CreateInstance<AddRecipeWindow>(scope.ServiceProvider, vm);
 
-        if (owner != null) window.Owner = owner;
+        if (current != null)
+            window.Owner = current;
 
         var dialogResult = window.ShowDialog();
 
@@ -157,14 +164,18 @@ public class RecipeListWindowViewModel : ViewModelBase {
             UpdateRecipesList();
             UpdateOwnerOrAdmin();
         }
+
+        scope.Dispose();
+        current?.Show();
     }
 
     private void OpenRecipeDetailWindow() {
         if (SelectedRecipe == null) return;
 
-        var owner = Application.Current?.Windows.OfType<RecipeListWindow>().FirstOrDefault();
+        var current = WindowHelper.GetActiveWindow();
+        current?.Hide();
 
-        using var scope = _services.CreateScope();
+        var scope = _services.CreateScope();
 
         // Resolve VM factory and create the VM with runtime Recipe
         var vmFactory = scope.ServiceProvider.GetRequiredService<Func<Recipe, RecipeDetailWindowViewModel>>();
@@ -173,7 +184,8 @@ public class RecipeListWindowViewModel : ViewModelBase {
         // Create the window with that VM (DI resolves other ctor args if any)
         var window = ActivatorUtilities.CreateInstance<RecipeDetailWindow>(scope.ServiceProvider, vm);
 
-        if (owner != null) window.Owner = owner;
+        if (current != null)
+            window.Owner = current;
 
         // ShowDialog returns the DialogResult (true = saved/confirmed, false/null = cancelled/closed)
         var dialogResult = window.ShowDialog();
@@ -183,54 +195,56 @@ public class RecipeListWindowViewModel : ViewModelBase {
             UpdateRecipesList();
             UpdateOwnerOrAdmin();
         }
+
+        scope.Dispose();
+        current?.Show();
     }
 
     private void OpenUserListWindow() {
+        // Find and hide current window so the new window appears on top
         var current = WindowHelper.GetActiveWindow();
+
+        // Hide the current window
         current?.Hide();
 
+        IServiceScope? scope = null;
         try {
-            // Create a DI scope to resolve the UserListWindow
-            using var scope = _services.CreateScope();
+            // Create a DI scope to resolve the window that should be opened.
+            scope = _services.CreateScope();
 
-            // Get the window UserListWindow from the DI scope
+            // Resolve the UserListWindow from the DI scope
             var window = scope.ServiceProvider.GetRequiredService<UserListWindow>();
 
-            // Set the owner to keep proper window parenting
+            // Set the owner to keep proper window parenting (optional, but recommended).
+            // It is needed for WindowStartupLocation.CenterOwner to work correctly.
             if (current != null)
                 window.Owner = current;
 
-            window.Show();
-
+            // Subscribe to the Closed event to know when it closes.
             window.Closed += (_, _) => {
-                // When the recipe list window closes, show the main window again
+                // When the user list window closes, show the main window again
                 if (current != null) {
                     current.Show();
                     current.Activate();
+
+                    // Dispose the scope after the window is done
+                    scope?.Dispose();
                 }
             };
+
+            // Show the user list window (non-modal)
+            window.Show();
         }
+        // Handle any exceptions that may occur during window creation or showing
         catch (Exception ex) {
             MessageBox.Show($"An error occurred while opening the user list window: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             if (current != null) {
+                // Restore the main window if there was an error and ensure it is active
                 current.Show();
                 current.Activate();
             }
+            scope?.Dispose();
         }
-
-        /*// Use the current RecipeListWindow as owner
-        var owner = Application.Current?.Windows.OfType<RecipeListWindow>().FirstOrDefault();
-
-        // Open the UserListWindow as a modal dialog from a DI scope
-        using var scope = _services.CreateScope();
-        var window = scope.ServiceProvider.GetRequiredService<UserListWindow>();
-
-        if (owner != null)
-            window.Owner = owner;
-
-        window.ShowDialog();*/
-
-
     }
 
     private void PerformDelete() {
