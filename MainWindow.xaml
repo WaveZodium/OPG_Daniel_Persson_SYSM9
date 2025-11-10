@@ -12,58 +12,59 @@
 
     <Grid>
         <StackPanel Width="auto" Height="auto" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <!-- Header -->
             <Image Source="{StaticResource SteamingPotImage}"
                    Width="80" Height="80" Stretch="Uniform"
                    Margin="0,0,0,0" HorizontalAlignment="Center"/>
             <TextBlock Text="CookMaster" FontSize="42" FontWeight="Bold" 
                        HorizontalAlignment="Center" Margin="0,0,0,30"/>
 
+            <!-- Username Input Box -->
             <TextBlock Text="Username:" Margin="3" FontSize="14" FontWeight="DemiBold"/>
             <TextBox Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                      Margin="3, 0, 3, 3" Padding="3"
                      Style="{StaticResource RoundedTextBoxStyle}"
                      behaviors:FocusBehavior.IsFocused="{Binding FocusUsername, Mode=TwoWay}"
-                     behaviors:EnterKeyBehavior.EnterKeyCommand="{Binding TrySignInCommand}" />
+                     behaviors:EnterKeyBehavior.EnterKeyCommand="{Binding PerformTrySignInCommand}" />
 
+            <!-- Password Input Box -->
             <TextBlock Text="Password:" Margin="3" FontSize="14" FontWeight="DemiBold"/>
             <PasswordBox Margin="3, 0, 3, 3" Padding="3"
                          Style="{StaticResource RoundedPasswordBoxStyle}"
                          behaviors:PasswordBoxAssistant.BindPassword="True"
                          behaviors:PasswordBoxAssistant.BoundPassword="{Binding Password, Mode=TwoWay}"
-                         behaviors:EnterKeyBehavior.EnterKeyCommand="{Binding TrySignInCommand}" />
+                         behaviors:EnterKeyBehavior.EnterKeyCommand="{Binding PerformTrySignInCommand}" />
 
+            <!-- Forgot Password Link -->
             <TextBlock FontSize="12" HorizontalAlignment="Center" TextAlignment="Center" Margin="3">
-                <Hyperlink Command="{Binding ForgotPasswordCommand}">Forgot password?</Hyperlink>
+                <Hyperlink Command="{Binding PerformOpenForgotPasswordWindowCommand}">Forgot password?</Hyperlink>
             </TextBlock>
 
+            <!-- Two-Factor Authentication Input Box & Button -->
             <StackPanel Margin="3 12 0 0">
                 <TextBlock Text="2FA Code:" FontWeight="DemiBold"/>
-
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                 <TextBox Text="{Binding TwoFactorCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                         Margin="0, 0, 3, 3" Padding="3"
+                         Margin="0, 0, 3, 0" Padding="3"
                          Style="{StaticResource RoundedTextBoxStyle}"
-                         behaviors:EnterKeyBehavior.EnterKeyCommand="{Binding TrySignInCommand}" />
-                    <Button Content="Send Code" Command="{Binding SendTwoFactorCodeCommand}" 
-                            Width="80" Height="25" Margin="6,0,0,0" Grid.Column="1"
+                         behaviors:EnterKeyBehavior.EnterKeyCommand="{Binding PerformTrySignInCommand}" />
+                    <Button Content="Send Code" Command="{Binding PerformSendTwoFactorCodeCommand}" 
+                            Width="80" Height="30" Margin="6,0,0,0" Grid.Column="1"
                             ToolTip="Send 2FA Code"
                             Style="{StaticResource ButtonLightGrayStyle}"/>
                 </Grid>
-                
-                
-                
             </StackPanel>
 
+            <!-- Sign In and Register Buttons -->
             <StackPanel Orientation="Horizontal" Margin="0 21 0 0" HorizontalAlignment="Center">
-                <Button Content="Sign In" Command="{Binding TrySignInCommand}" 
+                <Button Content="Sign In" Command="{Binding PerformTrySignInCommand}" 
                         Width="100" Height="30" Margin="6"
-                        Style="{StaticResource ButtonLightGrayStyle}"
-                        />
-                <Button Content="Register" Command="{Binding OpenRegisterWindowCommand}" 
+                        Style="{StaticResource ButtonLightGrayStyle}"/>
+                <Button Content="Register" Command="{Binding PerformOpenRegisterWindowCommand}" 
                         Width="100" Height="30" Margin="6"
                         Style="{StaticResource ButtonBlueStyle}"/>
             </StackPanel>

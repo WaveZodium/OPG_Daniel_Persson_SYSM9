@@ -5,6 +5,7 @@ using System.Windows;
 using CookMaster.Managers;
 using CookMaster.MVVM;
 using CookMaster.Views;
+using CookMaster.Helpers;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,48 +26,54 @@ public class MainWindowViewModel : ViewModelBase {
         _userManager = userManager;
         _services = services;
 
-        // canExecute returns true only when both fields are non-empty
-        TrySignInCommand = new RelayCommand(_ => TrySignIn(), _ => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password));
-        OpenRecipeListWindowCommand = new RelayCommand(_ => OpenRecipeListWindow());
-        OpenRegisterWindowCommand = new RelayCommand(_ => OpenRegisterWindow());
-        ForgotPasswordCommand = new RelayCommand(_ => ForgotPassword());
-        SendTwoFactorCodeCommand = new RelayCommand(_ => SendTwoFactorCode());
+        // Initialize commands
+        PerformOpenForgotPasswordWindowCommand = new RelayCommand(_ => PerformOpenForgotPasswordWindow());
+        //PerformOpenRecipeListWindowCommand = new RelayCommand(_ => PerformOpenRecipeListWindow());
+        PerformOpenRegisterWindowCommand = new RelayCommand(_ => PerformOpenRegisterWindow());
+        PerformSendTwoFactorCodeCommand = new RelayCommand(_ => PerformSendTwoFactorCode());
+        PerformTrySignInCommand = new RelayCommand(_ => PerformTrySignIn(), _ => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password));
 
         // Request initial focus on the username box (bound to the attached behavior)
         FocusUsername = true;
     }
 
     // 5) Commands + Execute/CanExecute
-    public RelayCommand TrySignInCommand { get; }
-    public RelayCommand OpenRecipeListWindowCommand { get; }
-    public RelayCommand OpenRegisterWindowCommand { get; }
-    public RelayCommand ForgotPasswordCommand { get; }
-    public RelayCommand SendTwoFactorCodeCommand { get; }
+    public RelayCommand PerformOpenForgotPasswordWindowCommand { get; }
+    //public RelayCommand PerformOpenRecipeListWindowCommand { get; }
+    public RelayCommand PerformOpenRegisterWindowCommand { get; }
+    public RelayCommand PerformSendTwoFactorCodeCommand { get; }
+    public RelayCommand PerformTrySignInCommand { get; }
 
-    private void TrySignIn() {
-        // Use bound properties from the view
-        var username = Username?.Trim() ?? string.Empty;
-        var password = Password ?? string.Empty;
+    private void PerformOpenForgotPasswordWindow() {
+        // Find the current active window (owner), regardless of type
+        var current = WindowHelper.GetActiveWindow();
 
-        if (_userManager.SignIn(username, password)) {
-            if (GeneratedTwoFactorCode != TwoFactorCode || GeneratedTwoFactorCode == string.Empty) {
-                MessageBox.Show("Login failed. Please check your 2FA code.", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            else {
-                // Successful login; open recipe list window
-                Username = string.Empty;
-                Password = string.Empty;
-                OpenRecipeListWindow();
-            }
+        // Hide the current window so it disappears behind the modal dialog
+        current?.Hide();
+
+        try {
+            // Open the ForgotPasswordWindow as a modal dialog from a DI scope
+            using var scope = _services.CreateScope();
+            var window = scope.ServiceProvider.GetRequiredService<ForgotPasswordWindow>();
+
+            // Set the owner to keep proper window parenting (optional, but recommended)
+            if (current != null)
+                window.Owner = current;
+
+            // Show dialog; this blocks until the register window closes (either via X or Close button)
+            var result = window.ShowDialog();
         }
-        else {
-            // Failed login; show message box (in real app, use better UI feedback)
-            MessageBox.Show("Login failed. Please check your username and password.", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+        finally {
+            // When the dialog closes, restore the same window
+            if (current != null) {
+                current.Show();
+                current.Activate();
+            }
         }
     }
 
     private void OpenRecipeListWindow() {
-        var current = GetActiveWindow();
+        var current = WindowHelper.GetActiveWindow();
         current?.Hide();
 
         try {
@@ -98,9 +105,10 @@ public class MainWindowViewModel : ViewModelBase {
         }
     }
 
-    private void OpenRegisterWindow() {
+    // Register command execution (bound to Register button)
+    private void PerformOpenRegisterWindow() {
         // Find the current active window (owner), regardless of type
-        var current = GetActiveWindow();
+        var current = WindowHelper.GetActiveWindow();
 
         // Hide the current window so it disappears behind the modal dialog
         current?.Hide();
@@ -115,7 +123,7 @@ public class MainWindowViewModel : ViewModelBase {
                 window.Owner = current;
 
             // Show dialog; this blocks until the register window closes (either via X or Close button)
-            window.ShowDialog();
+            var result = window.ShowDialog();
         }
         finally {
             // When the dialog closes, restore the same window
@@ -126,37 +134,10 @@ public class MainWindowViewModel : ViewModelBase {
         }
     }
 
-    private void ForgotPassword() {
-        // Find the current active window (owner), regardless of type
-        var current = GetActiveWindow();
-
-        // Hide the current window so it disappears behind the modal dialog
-        current?.Hide();
-
-        try {
-            // Open the ForgotPasswordWindow as a modal dialog from a DI scope
-            using var scope = _services.CreateScope();
-            var window = scope.ServiceProvider.GetRequiredService<ForgotPasswordWindow>();
-
-            // Set the owner to keep proper window parenting (optional, but recommended)
-            if (current != null)
-                window.Owner = current;
-
-            // Show dialog; this blocks until the register window closes (either via X or Close button)
-            window.ShowDialog();
-        }
-        finally {
-            // When the dialog closes, restore the same window
-            if (current != null) {
-                current.Show();
-                current.Activate();
-            }
-        }
-    }
-
-    private void SendTwoFactorCode() {
+    // Send two-factor code command execution (bound to Send 2FA Code button)
+    private void PerformSendTwoFactorCode() {
         // Find and hide current window so the dialog appears modally on top
-        var current = GetActiveWindow();
+        var current = WindowHelper.GetActiveWindow();
         current?.Hide();
 
         try {
@@ -182,33 +163,64 @@ public class MainWindowViewModel : ViewModelBase {
         }
     }
 
+    // Try sign-in command execution (bound to Sign In button)
+    private void PerformTrySignIn() {
+        // Use bound properties from the view
+        var username = Username?.Trim() ?? string.Empty;
+        var password = Password ?? string.Empty;
+
+        if (_userManager.SignIn(username, password)) {
+            if (GeneratedTwoFactorCode != TwoFactorCode || GeneratedTwoFactorCode == string.Empty) {
+                MessageBox.Show("Login failed. Please check your 2FA code.", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            else {
+                // Successful login; open recipe list window
+                Username = string.Empty;
+                Password = string.Empty;
+                OpenRecipeListWindow();
+            }
+        }
+        else {
+            // Failed login; show message box (in real app, use better UI feedback)
+            MessageBox.Show("Login failed. Please check your username and password.", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     // 6) Bindable state (editable input)
+    // Password property (bound TwoWay to PasswordBox via attached behavior)
+    private string _password = string.Empty;
+    public string Password {
+        get => _password;
+        set {
+            if (Set(ref _password, value)) {
+                PerformTrySignInCommand?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    // Username property (bound TwoWay to TextBox)
     private string _username = string.Empty;
     public string Username {
         get => _username;
         set {
             if (Set(ref _username, value)) {
-                TrySignInCommand?.RaiseCanExecuteChanged();
+                PerformTrySignInCommand?.RaiseCanExecuteChanged();
             }
         }
     }
 
-    private string _password = string.Empty;
-    // NOTE: TextBox binding is simple for the assignment. For production use PasswordBox + secure handling.
-    public string Password {
-        get => _password;
-        set {
-            if (Set(ref _password, value)) {
-                TrySignInCommand?.RaiseCanExecuteChanged();
-            }
-        }
-    }
-
-    // New MVVM-friendly focus request property (bind TwoWay to attached behavior)
+    // MVVM-friendly focus request property (bind TwoWay to attached behavior)
     private bool _focusUsername = true;
     public bool FocusUsername {
         get => _focusUsername;
         set => Set(ref _focusUsername, value);
+    }
+
+    // Holds the last generated two-factor code sent to the user
+    private string _generatedTwoFactorCode = string.Empty;
+    public string GeneratedTwoFactorCode {
+        get => _generatedTwoFactorCode;
+        set => Set(ref _generatedTwoFactorCode, value);
     }
 
     // Holds the last generated two-factor code returned by CodeWindow
@@ -218,12 +230,6 @@ public class MainWindowViewModel : ViewModelBase {
         set => Set(ref _twoFactorCode, value);
     }
 
-    private string _generatedTwoFactorCode = string.Empty;
-    public string GeneratedTwoFactorCode {
-        get => _generatedTwoFactorCode;
-        set => Set(ref _generatedTwoFactorCode, value);
-    }
-
     // 7) Validation and error/feedback properties
 
     // 8) Derived/computed properties
@@ -231,15 +237,6 @@ public class MainWindowViewModel : ViewModelBase {
     // 9) Collections
 
     // 10) Private helpers/validation
-    private static Window? GetActiveWindow() {
-        var app = Application.Current;
-        if (app == null) return null;
-
-        // Prefer the active focused window; fall back to any visible/enabled; then MainWindow
-        return app.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
-            ?? app.Windows.OfType<Window>().FirstOrDefault(w => w.IsVisible && w.IsEnabled)
-            ?? app.MainWindow;
-    }
 
     // 11) Nested types (none)
 }
